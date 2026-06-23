@@ -50,10 +50,11 @@
         .case-card .case-price { color:#ffd700; font-weight:600; }
         #rouletteOverlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.65); backdrop-filter:blur(6px); z-index:100; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px; pointer-events:none; opacity:0; transition:opacity 0.3s; }
         #rouletteOverlay.active { opacity:1; pointer-events:all; }
-        #rouletteStrip { display:flex; gap:4px; will-change:transform; }
-        #rouletteWindow { width:600px; height:100px; overflow:hidden; border:3px solid #9c27b0; border-radius:8px; position:relative; background:#111; }
-        #roulettePointer { position:absolute; top:0; bottom:0; left:50%; width:3px; background:#ffd700; z-index:5; box-shadow:0 0 20px #ffd700; transform:translateX(-50%); }
-        .roulette-item { min-width:90px; height:100px; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:10px; text-align:center; color:#fff; border-radius:4px; flex-shrink:0; }
+        #rouletteStrip { display:flex; gap:8px; will-change:transform; }
+        #rouletteWindow { width:850px; height:130px; overflow:hidden; border:3px solid #9c27b0; border-radius:12px; position:relative; background:#0a0a0a; }
+        #roulettePointer { position:absolute; top:0; bottom:0; left:50%; width:4px; background:#ffd700; z-index:5; box-shadow:0 0 20px #ffd700; transform:translateX(-50%); }
+        .roulette-item { min-width:130px; height:130px; display:flex; flex-direction:column; align-items:center; justify-content:center; font-weight:700; font-size:14px; text-align:center; color:#fff; border-radius:8px; flex-shrink:0; padding:8px; gap:6px; }
+        .roulette-item small { font-size:11px; }
         #winPopup { position:fixed; top:50%; left:50%; transform:translate(-50%, -50%) scale(0); background:#1a1a1a; border:3px solid #ffd700; border-radius:20px; padding:30px; z-index:110; text-align:center; transition:transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow:0 0 60px rgba(255,215,0,0.5); }
         #winPopup.show { transform:translate(-50%, -50%) scale(1); }
         #hudOverlay { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); display:flex; gap:20px; align-items:flex-end; z-index:15; pointer-events:none; }
@@ -188,7 +189,6 @@
             <tbody id="scoreboardBody"></tbody>
         </table>
     </div>
-    <!-- Магазин оружия -->
     <div id="shopMenu" class="shop-menu">
         <div class="shop-panel">
             <h2 style="color:#fff;letter-spacing:2px;">ПОКУПКА ОРУЖИЯ</h2>
@@ -257,7 +257,6 @@
             { name: 'Броня', weapon: 'armor', price: 650, desc: 'Восстанавливает 100 ед. брони', slot: null },
         ];
 
-        // Three.js настройка
         const canvas = document.getElementById('gameCanvas');
         const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -291,7 +290,6 @@
         scene.add(sunLight);
         scene.add(new THREE.HemisphereLight(0xffeedd, 0x8d6e4b, 0.8));
 
-        // Карта Ancient
         const mapObjects = [];
         const collisionBoxes = [];
         function createWall(x, z, w, h, d, color = 0xc4a882) {
@@ -358,7 +356,6 @@
         }
         buildAncientMap();
 
-        // Оружие от первого лица
         const weaponGroup = new THREE.Group();
         camera.add(weaponGroup);
         weaponGroup.position.set(0.35, -0.3, -0.6);
@@ -482,7 +479,6 @@
         }
         updateWeaponModel();
 
-        // Боты
         const bots = [];
         const botGeom = new THREE.CapsuleGeometry(0.35, 1.3, 4, 8);
         const botHeadGeom = new THREE.SphereGeometry(0.25, 8, 6);
@@ -497,7 +493,6 @@
         function spawnBots() { [[-20,-20],[20,20],[-15,15],[15,-15],[-25,5],[25,-5],[5,-25],[-5,25]].forEach((p,i) => createBot(p[0], p[1], 'Bot_'+(i+1))); }
         spawnBots();
 
-        // Игрок
         const player = { x: 0, z: 5, y: 1.7, vy: 0, onGround: true, yaw: 0, pitch: 0, crouching: false, slowWalking: false, targetHeight: 1.7, bobPhase: 0 };
         const keys = {};
         let mouseDX = 0, mouseDY = 0, pointerLocked = false;
@@ -753,19 +748,20 @@
             rouletteItems = []; for (let i=0; i<200; i++) { let r = Math.random()*totalWeight; let picked = pool[0]; for (const sk of pool) { r -= sk.weight; if (r <= 0) { picked = sk; break; } } rouletteItems.push(picked); }
             rouletteResult = rouletteItems[Math.floor(Math.random()*rouletteItems.length)];
             const displayItems = [...rouletteItems, ...rouletteItems];
-            const strip = document.getElementById('rouletteStrip'); strip.innerHTML = displayItems.map(s => `<div class="roulette-item" style="background:${s.color}33;border:2px solid ${s.color};color:${s.color};">${s.name}<br><small>${s.rarity}</small></div>`).join('');
+            const strip = document.getElementById('rouletteStrip'); strip.innerHTML = displayItems.map(s => `<div class="roulette-item" style="background:${s.color}33;border:2px solid ${s.color};color:${s.color};"><span>${s.name}</span><small>${s.rarity}</small></div>`).join('');
             strip.style.transform = 'translateX(0px)'; document.getElementById('rouletteOverlay').classList.add('active'); rouletteActive = false;
         };
 
         window.startRoulette = function() {
             if (rouletteActive) return; if (!selectedCase || balance < selectedCase.price) return;
             balance -= selectedCase.price; saveProgress(); updateProfileUI(); rouletteActive = true;
-            const strip = document.getElementById('rouletteStrip'); const itemWidth = 94; const totalItems = rouletteItems.length;
+            const strip = document.getElementById('rouletteStrip'); const itemWidth = 130 + 8; // min-width + gap
+            const totalItems = rouletteItems.length;
             const targetIndex = rouletteItems.indexOf(rouletteResult); const targetRawIndex = totalItems + targetIndex;
-            const targetOffset = -(targetRawIndex * itemWidth) + (300 - itemWidth/2);
+            const targetOffset = -(targetRawIndex * itemWidth) + (850/2 - itemWidth/2);
             const startOffset = parseFloat(strip.style.transform.replace('translateX(','').replace('px)','')) || 0;
             const totalScroll = targetOffset - startOffset - (totalItems * 2 * itemWidth);
-            const duration = 4000; // 4 секунды – медленная, читаемая прокрутка
+            const duration = 6000; // 6 секунд – очень медленно и читаемо
             const startTime = Date.now();
             document.getElementById('rouletteOpenBtn').disabled = true;
             function animate() {
