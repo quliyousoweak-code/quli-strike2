@@ -278,7 +278,7 @@
         renderer.toneMappingExposure = 1.2;
 
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x000000); // начальный чёрный фон
+        scene.background = new THREE.Color(0x000000);
         scene.fog = new THREE.Fog(0xc8b89a, 40, 120);
 
         const camera = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.1, 200);
@@ -622,20 +622,25 @@
         function playerDie() { gameState = 'dead'; playerDeaths++; respawnCountdown = 5; document.getElementById('deathScreen').classList.add('active'); document.exitPointerLock(); pointerLocked = false; if (shopOpen) closeShop(); updateHUD(); updateScoreboard(); }
         function respawnPlayer() { player.x = 0; player.z = 5; player.y = 1.7; player.vy = 0; playerHP = 100; playerArmor = 50; playerAmmo.current = weaponDefaults[currentWeapon].magSize; playerAmmo.reserve = weaponDefaults[currentWeapon].reserveAmmo; isReloading = false; reloadTimer = 0; fireCooldown = 0; roundMoney = 10000; renderShopGrid(); gameState = 'playing'; document.getElementById('deathScreen').classList.remove('active'); updateHUD(); canvas.requestPointerLock(); }
 
-        // Фоновая логика
-        function setMenuBackground() {
+        // Фоновая логика (исправлено)
+        function setBlackBackground() {
             scene.background = new THREE.Color(0x000000);
         }
         function setGameBackground() {
             scene.background = new THREE.Color(0x87ceeb);
         }
 
+        // Устанавливаем чёрный фон сразу
+        setBlackBackground();
+
         function showScreen(screenId) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('visible'));
             const screen = document.getElementById(screenId); if (screen) screen.classList.add('visible');
             currentScreen = screenId;
-            if (screenId === 'menuScreen') { document.getElementById('uiLayer').classList.add('active'); updateProfileUI(); setMenuBackground(); }
-            else if (screenId !== 'playing') { setMenuBackground(); }
+            if (screenId !== 'playing') {
+                setBlackBackground();
+            }
+            if (screenId === 'menuScreen') { document.getElementById('uiLayer').classList.add('active'); updateProfileUI(); }
             if (screenId === 'inventoryScreen') renderInventory();
             if (screenId === 'casesScreen') renderCases();
             if (screenId === 'shopScreen') updateShopUI();
@@ -801,7 +806,7 @@
         }
         window.startGame = startGame;
 
-        function exitToMenu() { gameState = 'menu'; if (shopOpen) closeShop(); document.exitPointerLock(); pointerLocked = false; document.getElementById('hudOverlay').style.display = 'none'; document.getElementById('crosshair').style.display = 'none'; document.getElementById('deathScreen').classList.remove('active'); document.getElementById('scoreboard').classList.remove('active'); scoreboardOpen = false; document.getElementById('uiLayer').classList.add('active'); showScreen('menuScreen'); updateProfileUI(); saveProgress(); setMenuBackground(); }
+        function exitToMenu() { gameState = 'menu'; if (shopOpen) closeShop(); document.exitPointerLock(); pointerLocked = false; document.getElementById('hudOverlay').style.display = 'none'; document.getElementById('crosshair').style.display = 'none'; document.getElementById('deathScreen').classList.remove('active'); document.getElementById('scoreboard').classList.remove('active'); scoreboardOpen = false; document.getElementById('uiLayer').classList.add('active'); showScreen('menuScreen'); updateProfileUI(); saveProgress(); }
 
         function updateWeaponSlotUI() {
             document.getElementById('slot1Name').textContent = weaponDefaults[weaponSlots[1]]?.name || 'Пусто';
