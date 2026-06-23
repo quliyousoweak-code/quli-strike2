@@ -370,7 +370,7 @@
         let weaponModel = null;
         let leftHand = null, rightHand = null;
 
-        // Улучшенные текстуры перчаток
+        // Перчатки
         function createGloveTexture(skin = null) {
             const c = document.createElement('canvas');
             c.width = 512; c.height = 512;
@@ -381,82 +381,51 @@
             ctx.fillRect(0, 0, 512, 512);
             if (name.includes('Crimson Weave')) {
                 ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3;
-                for (let i = 0; i < 15; i++) {
-                    ctx.beginPath(); ctx.moveTo(i * 40, 0); ctx.lineTo(i * 40, 512); ctx.stroke();
-                }
-                for (let i = 0; i < 15; i++) {
-                    ctx.beginPath(); ctx.moveTo(0, i * 40); ctx.lineTo(512, i * 40); ctx.stroke();
-                }
+                for (let i = 0; i < 15; i++) { ctx.beginPath(); ctx.moveTo(i * 40, 0); ctx.lineTo(i * 40, 512); ctx.stroke(); }
+                for (let i = 0; i < 15; i++) { ctx.beginPath(); ctx.moveTo(0, i * 40); ctx.lineTo(512, i * 40); ctx.stroke(); }
             } else if (name.includes('King Snake')) {
                 ctx.fillStyle = '#f9a825';
-                for (let i = 0; i < 8; i++) {
-                    ctx.beginPath(); ctx.ellipse(128 + i * 60, 256, 80, 30, 0, 0, Math.PI * 2); ctx.fill();
-                }
+                for (let i = 0; i < 8; i++) { ctx.beginPath(); ctx.ellipse(128 + i * 60, 256, 80, 30, 0, 0, Math.PI * 2); ctx.fill(); }
                 ctx.fillStyle = '#000000';
-                for (let i = 0; i < 7; i++) {
-                    ctx.beginPath(); ctx.ellipse(158 + i * 60, 256, 60, 20, 0, 0, Math.PI * 2); ctx.fill();
-                }
+                for (let i = 0; i < 7; i++) { ctx.beginPath(); ctx.ellipse(158 + i * 60, 256, 60, 20, 0, 0, Math.PI * 2); ctx.fill(); }
             } else if (name.includes('Pandora')) {
-                for (let x = 0; x < 512; x += 64) {
-                    for (let y = 0; y < 512; y += 64) {
-                        ctx.fillStyle = (Math.floor(x/64) + Math.floor(y/64)) % 2 === 0 ? '#6a1b9a' : '#9c4dff';
-                        ctx.fillRect(x, y, 64, 64);
-                    }
+                for (let x = 0; x < 512; x += 64) for (let y = 0; y < 512; y += 64) {
+                    ctx.fillStyle = (Math.floor(x/64) + Math.floor(y/64)) % 2 === 0 ? '#6a1b9a' : '#9c4dff'; ctx.fillRect(x, y, 64, 64);
                 }
             } else if (name.includes('Superconductor')) {
-                const grad = ctx.createLinearGradient(0, 0, 512, 512);
-                grad.addColorStop(0, '#1a237e'); grad.addColorStop(0.5, '#ff6f00'); grad.addColorStop(1, '#1a237e');
+                const grad = ctx.createLinearGradient(0, 0, 512, 512); grad.addColorStop(0, '#1a237e'); grad.addColorStop(0.5, '#ff6f00'); grad.addColorStop(1, '#1a237e');
                 ctx.fillStyle = grad; ctx.fillRect(0, 0, 512, 512);
             } else if (name.includes('Hedge Maze')) {
-                ctx.fillStyle = '#4caf50'; ctx.fillRect(0, 0, 512, 512);
-                ctx.fillStyle = '#2e7d32';
-                for (let i = 0; i < 40; i++) {
-                    ctx.beginPath(); ctx.arc(Math.random() * 512, Math.random() * 512, 20 + Math.random() * 40, 0, Math.PI * 2); ctx.fill();
-                }
+                ctx.fillStyle = '#4caf50'; ctx.fillRect(0, 0, 512, 512); ctx.fillStyle = '#2e7d32';
+                for (let i = 0; i < 40; i++) { ctx.beginPath(); ctx.arc(Math.random() * 512, Math.random() * 512, 20 + Math.random() * 40, 0, Math.PI * 2); ctx.fill(); }
             } else if (name.includes('Spearmint')) {
-                for (let x = 0; x < 512; x += 32) {
-                    for (let y = 0; y < 512; y += 32) {
-                        ctx.fillStyle = (Math.floor(x/32) + Math.floor(y/32)) % 2 === 0 ? '#00e676' : '#00c853';
-                        ctx.fillRect(x, y, 32, 32);
-                    }
+                for (let x = 0; x < 512; x += 32) for (let y = 0; y < 512; y += 32) {
+                    ctx.fillStyle = (Math.floor(x/32) + Math.floor(y/32)) % 2 === 0 ? '#00e676' : '#00c853'; ctx.fillRect(x, y, 32, 32);
                 }
             } else if (name.includes('Vice')) {
-                const grad = ctx.createLinearGradient(0, 0, 512, 0);
-                grad.addColorStop(0, '#ff4081'); grad.addColorStop(1, '#00b0ff');
+                const grad = ctx.createLinearGradient(0, 0, 512, 0); grad.addColorStop(0, '#ff4081'); grad.addColorStop(1, '#00b0ff');
                 ctx.fillStyle = grad; ctx.fillRect(0, 0, 512, 512);
             } else if (name.includes('Arctic')) {
-                const grad = ctx.createRadialGradient(256, 256, 10, 256, 256, 300);
-                grad.addColorStop(0, '#ffffff'); grad.addColorStop(1, '#42a5f5');
+                const grad = ctx.createRadialGradient(256, 256, 10, 256, 256, 300); grad.addColorStop(0, '#ffffff'); grad.addColorStop(1, '#42a5f5');
                 ctx.fillStyle = grad; ctx.fillRect(0, 0, 512, 512);
             } else if (name.includes('Amphibious')) {
-                const grad = ctx.createLinearGradient(0, 0, 0, 512);
-                grad.addColorStop(0, '#00695c'); grad.addColorStop(1, '#1e88e5');
+                const grad = ctx.createLinearGradient(0, 0, 0, 512); grad.addColorStop(0, '#00695c'); grad.addColorStop(1, '#1e88e5');
                 ctx.fillStyle = grad; ctx.fillRect(0, 0, 512, 512);
             } else if (name.includes('Nocts')) {
-                ctx.fillStyle = '#000000'; ctx.fillRect(0, 0, 512, 512);
-                ctx.fillStyle = '#333333';
-                for (let i = 0; i < 20; i++) { ctx.fillRect(i * 25, 0, 12, 512); }
+                ctx.fillStyle = '#000000'; ctx.fillRect(0, 0, 512, 512); ctx.fillStyle = '#333333';
+                for (let i = 0; i < 20; i++) ctx.fillRect(i * 25, 0, 12, 512);
             } else {
-                for (let i = 0; i < 4000; i++) {
-                    ctx.fillStyle = `rgba(0,0,0,${Math.random()*0.15})`;
-                    ctx.fillRect(Math.random()*512, Math.random()*512, 1+Math.random()*2, 1+Math.random()*2);
-                }
+                for (let i = 0; i < 4000; i++) { ctx.fillStyle = `rgba(0,0,0,${Math.random()*0.15})`; ctx.fillRect(Math.random()*512, Math.random()*512, 1+Math.random()*2, 1+Math.random()*2); }
                 ctx.fillStyle = '#1a1a1a';
-                ctx.beginPath(); ctx.arc(80, 120, 40, 0, Math.PI*2); ctx.fill();
-                ctx.beginPath(); ctx.arc(160, 100, 40, 0, Math.PI*2); ctx.fill();
-                ctx.beginPath(); ctx.arc(240, 110, 40, 0, Math.PI*2); ctx.fill();
-                ctx.beginPath(); ctx.arc(320, 120, 40, 0, Math.PI*2); ctx.fill();
+                ctx.beginPath(); ctx.arc(80, 120, 40, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(160, 100, 40, 0, Math.PI*2); ctx.fill();
+                ctx.beginPath(); ctx.arc(240, 110, 40, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(320, 120, 40, 0, Math.PI*2); ctx.fill();
                 ctx.beginPath(); ctx.arc(400, 140, 40, 0, Math.PI*2); ctx.fill();
                 ctx.strokeStyle = '#cccccc'; ctx.lineWidth = 2;
-                for (let i = 0; i < 6; i++) {
-                    ctx.beginPath(); ctx.moveTo(30, 200 + i*50); ctx.lineTo(482, 200 + i*50); ctx.stroke();
-                }
+                for (let i = 0; i < 6; i++) { ctx.beginPath(); ctx.moveTo(30, 200 + i*50); ctx.lineTo(482, 200 + i*50); ctx.stroke(); }
                 ctx.fillStyle = '#111111'; ctx.fillRect(100, 350, 300, 80);
-                ctx.fillStyle = '#333333';
-                for (let i=0;i<5;i++) ctx.fillRect(110 + i*55, 360, 30, 60);
+                ctx.fillStyle = '#333333'; for (let i=0;i<5;i++) ctx.fillRect(110 + i*55, 360, 30, 60);
             }
-            ctx.fillStyle = '#ffffff'; ctx.font = 'bold 20px Arial'; ctx.textAlign = 'center';
-            ctx.fillText('OPERATOR', 256, 460);
+            ctx.fillStyle = '#ffffff'; ctx.font = 'bold 20px Arial'; ctx.textAlign = 'center'; ctx.fillText('OPERATOR', 256, 460);
             return new THREE.CanvasTexture(c);
         }
 
@@ -465,34 +434,18 @@
             const gloveTex = createGloveTexture(skin);
             const gloveMat = new THREE.MeshStandardMaterial({ map: gloveTex, roughness: 0.6, metalness: 0.3 });
             const darkMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.4, metalness: 0.8 });
-            const palm = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.14, 0.08), gloveMat);
-            palm.position.set(0, 0.04, 0); group.add(palm);
-            const fingers = [
-                { x: 0.05, y: 0.15, len: 0.12 }, { x: 0.01, y: 0.16, len: 0.13 },
-                { x: -0.03, y: 0.14, len: 0.11 }, { x: -0.07, y: 0.11, len: 0.09 }
-            ];
-            fingers.forEach(f => {
-                const finger = new THREE.Mesh(new THREE.BoxGeometry(0.035, f.len, 0.035), gloveMat);
-                finger.position.set(side === 'left' ? f.x : -f.x, f.y, 0.02);
-                group.add(finger);
-            });
-            const thumb = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.1, 0.05), gloveMat);
-            thumb.position.set(side === 'left' ? 0.09 : -0.09, 0.1, -0.02);
-            thumb.rotation.z = side === 'left' ? -0.4 : 0.4;
-            group.add(thumb);
-            const wristGuard = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.1, 0.11), darkMat);
-            wristGuard.position.set(0, -0.1, 0); group.add(wristGuard);
-            const cuff = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.06, 0.13), darkMat);
-            cuff.position.set(0, -0.17, 0); group.add(cuff);
+            const palm = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.14, 0.08), gloveMat); palm.position.set(0, 0.04, 0); group.add(palm);
+            const fingers = [ { x: 0.05, y: 0.15, len: 0.12 }, { x: 0.01, y: 0.16, len: 0.13 }, { x: -0.03, y: 0.14, len: 0.11 }, { x: -0.07, y: 0.11, len: 0.09 } ];
+            fingers.forEach(f => { const finger = new THREE.Mesh(new THREE.BoxGeometry(0.035, f.len, 0.035), gloveMat); finger.position.set(side === 'left' ? f.x : -f.x, f.y, 0.02); group.add(finger); });
+            const thumb = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.1, 0.05), gloveMat); thumb.position.set(side === 'left' ? 0.09 : -0.09, 0.1, -0.02); thumb.rotation.z = side === 'left' ? -0.4 : 0.4; group.add(thumb);
+            const wristGuard = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.1, 0.11), darkMat); wristGuard.position.set(0, -0.1, 0); group.add(wristGuard);
+            const cuff = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.06, 0.13), darkMat); cuff.position.set(0, -0.17, 0); group.add(cuff);
             return group;
         }
 
         function getSkinMaterial(weaponType) {
             const skin = equippedSkins[weaponType];
-            if (skin) {
-                const tex = createSkinTexture(skin);
-                return new THREE.MeshStandardMaterial({ map: tex, roughness: 0.4, metalness: 0.6 });
-            }
+            if (skin) { const tex = createSkinTexture(skin); return new THREE.MeshStandardMaterial({ map: tex, roughness: 0.4, metalness: 0.6 }); }
             return new THREE.MeshStandardMaterial({ color: weaponDefaults[weaponType].color, roughness: 0.5, metalness: 0.7 });
         }
 
@@ -500,29 +453,16 @@
             const c = document.createElement('canvas');
             c.width = 256; c.height = 256;
             const ctx = c.getContext('2d');
-            const colors = {
-                'Consumer':'#9e9e9e','Industrial':'#42a5f5','Mil-Spec':'#1e88e5',
-                'Restricted':'#8e24aa','Classified':'#d81b60','Covert':'#e53935','Gold':'#ffd700'
-            };
+            const colors = { 'Consumer':'#9e9e9e','Industrial':'#42a5f5','Mil-Spec':'#1e88e5','Restricted':'#8e24aa','Classified':'#d81b60','Covert':'#e53935','Gold':'#ffd700' };
             const baseColor = colors[skin.rarity] || '#888';
             ctx.fillStyle = baseColor; ctx.fillRect(0,0,256,256);
-            if (skin.rarity === 'Covert') {
-                for (let i=0;i<200;i++) { ctx.fillStyle=`rgba(255,${Math.floor(Math.random()*150)},0,0.7)`; ctx.beginPath(); ctx.arc(Math.random()*256,Math.random()*256,Math.random()*30+5,0,Math.PI*2); ctx.fill(); }
-            } else if (skin.rarity === 'Classified') {
-                ctx.strokeStyle='#ffffff';ctx.lineWidth=2;
-                for (let i=0;i<20;i++) { ctx.beginPath(); ctx.moveTo(i*20,0); ctx.lineTo(i*20,256); ctx.stroke(); ctx.beginPath(); ctx.moveTo(0,i*20); ctx.lineTo(256,i*20); ctx.stroke(); }
-            } else if (skin.rarity === 'Restricted') {
-                for (let i=0;i<100;i++) { ctx.fillStyle=`rgba(0,0,0,${Math.random()*0.5})`; ctx.fillRect(Math.random()*256,Math.random()*256,Math.random()*60,Math.random()*60); }
-            } else if (skin.rarity === 'Mil-Spec') {
-                for (let i=0;i<30;i++) { ctx.strokeStyle='#ffffff';ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(Math.random()*256,0); ctx.lineTo(Math.random()*256,256); ctx.stroke(); }
-            } else if (skin.rarity === 'Industrial') {
-                const grad=ctx.createLinearGradient(0,0,256,256); grad.addColorStop(0,baseColor); grad.addColorStop(1,'#ffffff'); ctx.fillStyle=grad; ctx.fillRect(0,0,256,256);
-            } else if (skin.rarity === 'Consumer') {
-                for (let i=0;i<500;i++) { ctx.fillStyle=Math.random()>0.5?'#aaaaaa':'#888888'; ctx.fillRect(Math.random()*256,Math.random()*256,2,2); }
-            } else if (skin.rarity === 'Gold') {
-                const grad=ctx.createRadialGradient(128,128,10,128,128,200); grad.addColorStop(0,'#fff8b0'); grad.addColorStop(0.5,'#ffd700'); grad.addColorStop(1,'#b8860b'); ctx.fillStyle=grad; ctx.fillRect(0,0,256,256);
-                for (let i=0;i<50;i++) { ctx.fillStyle='rgba(255,255,255,0.3)'; ctx.beginPath(); ctx.arc(Math.random()*256,Math.random()*256,Math.random()*5,0,Math.PI*2); ctx.fill(); }
-            }
+            if (skin.rarity === 'Covert') { for (let i=0;i<200;i++) { ctx.fillStyle=`rgba(255,${Math.floor(Math.random()*150)},0,0.7)`; ctx.beginPath(); ctx.arc(Math.random()*256,Math.random()*256,Math.random()*30+5,0,Math.PI*2); ctx.fill(); } }
+            else if (skin.rarity === 'Classified') { ctx.strokeStyle='#ffffff';ctx.lineWidth=2; for (let i=0;i<20;i++) { ctx.beginPath(); ctx.moveTo(i*20,0); ctx.lineTo(i*20,256); ctx.stroke(); ctx.beginPath(); ctx.moveTo(0,i*20); ctx.lineTo(256,i*20); ctx.stroke(); } }
+            else if (skin.rarity === 'Restricted') { for (let i=0;i<100;i++) { ctx.fillStyle=`rgba(0,0,0,${Math.random()*0.5})`; ctx.fillRect(Math.random()*256,Math.random()*256,Math.random()*60,Math.random()*60); } }
+            else if (skin.rarity === 'Mil-Spec') { for (let i=0;i<30;i++) { ctx.strokeStyle='#ffffff';ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(Math.random()*256,0); ctx.lineTo(Math.random()*256,256); ctx.stroke(); } }
+            else if (skin.rarity === 'Industrial') { const grad=ctx.createLinearGradient(0,0,256,256); grad.addColorStop(0,baseColor); grad.addColorStop(1,'#ffffff'); ctx.fillStyle=grad; ctx.fillRect(0,0,256,256); }
+            else if (skin.rarity === 'Consumer') { for (let i=0;i<500;i++) { ctx.fillStyle=Math.random()>0.5?'#aaaaaa':'#888888'; ctx.fillRect(Math.random()*256,Math.random()*256,2,2); } }
+            else if (skin.rarity === 'Gold') { const grad=ctx.createRadialGradient(128,128,10,128,128,200); grad.addColorStop(0,'#fff8b0'); grad.addColorStop(0.5,'#ffd700'); grad.addColorStop(1,'#b8860b'); ctx.fillStyle=grad; ctx.fillRect(0,0,256,256); for (let i=0;i<50;i++) { ctx.fillStyle='rgba(255,255,255,0.3)'; ctx.beginPath(); ctx.arc(Math.random()*256,Math.random()*256,Math.random()*5,0,Math.PI*2); ctx.fill(); } }
             ctx.fillStyle='#ffffff'; ctx.font='bold 16px Arial'; ctx.textAlign='center'; ctx.fillText(skin.name,128,240);
             return new THREE.CanvasTexture(c);
         }
@@ -531,27 +471,56 @@
             const c = document.createElement('canvas');
             c.width = 200; c.height = 140;
             const ctx = c.getContext('2d');
-            ctx.fillStyle = '#1a1a1a';
-            ctx.fillRect(0,0,200,140);
-            if (item.type === 'case') {
-                ctx.fillStyle = '#ffd700'; ctx.font = 'bold 24px Arial'; ctx.textAlign = 'center';
-                ctx.fillText('📦', 100, 70);
-            } else if (item.type === 'gloves') {
-                ctx.fillStyle = item.color || '#888'; ctx.fillRect(20,20,160,100);
-                ctx.fillStyle = '#000'; ctx.font = 'bold 16px Arial'; ctx.textAlign = 'center';
-                ctx.fillText('🧤', 100, 70);
-            } else {
-                const wtype = item.weaponType;
-                const col = weaponDefaults[wtype]?.color || 0x888888;
-                ctx.fillStyle = '#' + col.toString(16).padStart(6, '0');
-                ctx.fillRect(20,20,160,100);
-                ctx.fillStyle = '#000'; ctx.font = 'bold 14px Arial'; ctx.textAlign = 'center';
-                ctx.fillText(weaponDefaults[wtype]?.name || wtype, 100, 75);
-            }
+            ctx.fillStyle = '#1a1a1a'; ctx.fillRect(0,0,200,140);
+            if (item.type === 'case') { ctx.fillStyle = '#ffd700'; ctx.font = 'bold 24px Arial'; ctx.textAlign = 'center'; ctx.fillText('📦', 100, 70); }
+            else if (item.type === 'gloves') { ctx.fillStyle = item.color || '#888'; ctx.fillRect(20,20,160,100); ctx.fillStyle = '#000'; ctx.font = 'bold 16px Arial'; ctx.textAlign = 'center'; ctx.fillText('🧤', 100, 70); }
+            else { const wtype = item.weaponType; const col = weaponDefaults[wtype]?.color || 0x888888; ctx.fillStyle = '#' + col.toString(16).padStart(6, '0'); ctx.fillRect(20,20,160,100); ctx.fillStyle = '#000'; ctx.font = 'bold 14px Arial'; ctx.textAlign = 'center'; ctx.fillText(weaponDefaults[wtype]?.name || wtype, 100, 75); }
             return c.toDataURL();
         }
 
-        // УЛУЧШЕННЫЕ МОДЕЛИ ОРУЖИЯ
+        // УЛУЧШЕННЫЕ МОДЕЛИ ОРУЖИЯ С ТЕКСТУРАМИ
+        function createWeaponTexture(weaponType, skinColor = null) {
+            const c = document.createElement('canvas');
+            c.width = 512; c.height = 512;
+            const ctx = c.getContext('2d');
+            const baseColor = skinColor || '#555555';
+            ctx.fillStyle = baseColor;
+            ctx.fillRect(0, 0, 512, 512);
+            for (let i = 0; i < 300; i++) {
+                ctx.strokeStyle = `rgba(0,0,0,${Math.random()*0.4})`;
+                ctx.lineWidth = Math.random()*2;
+                ctx.beginPath();
+                ctx.moveTo(Math.random()*512, Math.random()*512);
+                ctx.lineTo(Math.random()*512, Math.random()*512);
+                ctx.stroke();
+            }
+            ctx.fillStyle = 'rgba(255,255,255,0.1)';
+            ctx.fillRect(10, 10, 490, 20);
+            ctx.fillRect(10, 480, 490, 20);
+            if (weaponType === 'ak47') {
+                ctx.fillStyle = '#5c3a1e';
+                ctx.fillRect(50, 400, 412, 80);
+                ctx.fillStyle = '#3e2723';
+                for (let i=0;i<6;i++) ctx.fillRect(60 + i*70, 410, 30, 60);
+            } else if (weaponType === 'm4a4') {
+                ctx.fillStyle = '#1a1a1a';
+                ctx.fillRect(100, 400, 312, 60);
+                ctx.fillStyle = '#333333';
+                ctx.fillRect(120, 410, 30, 40);
+                ctx.fillRect(200, 410, 30, 40);
+                ctx.fillRect(280, 410, 30, 40);
+            } else if (weaponType === 'awp') {
+                ctx.fillStyle = '#2f4f2f';
+                ctx.fillRect(80, 420, 352, 50);
+                ctx.fillStyle = '#1a1a1a';
+                ctx.fillRect(100, 430, 312, 30);
+            } else if (weaponType === 'usps') {
+                ctx.fillStyle = '#1a1a1a';
+                ctx.fillRect(150, 420, 212, 50);
+            }
+            return new THREE.CanvasTexture(c);
+        }
+
         function updateWeaponModel() {
             if (weaponModel) weaponGroup.remove(weaponModel);
             if (leftHand) weaponGroup.remove(leftHand);
@@ -560,8 +529,11 @@
             rightHand = createGloveHand('right', equippedGloves);
             weaponGroup.add(leftHand); weaponGroup.add(rightHand);
 
-            const skinMat = getSkinMaterial(currentWeapon);
-            const darkMetalMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.4, metalness: 0.8 });
+            const skin = equippedSkins[currentWeapon];
+            const skinColor = skin ? skin.color : null;
+            const weaponTex = createWeaponTexture(currentWeapon, skinColor);
+            const mainMat = new THREE.MeshStandardMaterial({ map: weaponTex, roughness: 0.5, metalness: 0.8 });
+            const darkMetalMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.4, metalness: 0.9 });
             const woodMat = new THREE.MeshStandardMaterial({ color: 0x5c3a1e, roughness: 0.8, metalness: 0.1 });
             const plasticMat = new THREE.MeshStandardMaterial({ color: 0x2a2a2a, roughness: 0.6, metalness: 0.2 });
             const group = new THREE.Group();
@@ -569,69 +541,69 @@
             let rightHandPos = new THREE.Vector3(-0.15, -0.05, 0.1);
 
             if (currentWeapon === 'ak47') {
-                const receiver = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.12, 0.4), skinMat); receiver.position.set(0, 0.06, -0.1); group.add(receiver);
-                const handguard = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.07, 0.2), woodMat); handguard.position.set(0, 0.03, -0.32); group.add(handguard);
-                const stock = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.1, 0.3), woodMat); stock.position.set(0, 0.03, 0.2); group.add(stock);
-                const grip = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.1, 0.05), plasticMat); grip.position.set(0, -0.05, 0.07); grip.rotation.x = 0.2; group.add(grip);
-                const mag = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.18, 0.07), darkMetalMat); mag.position.set(0, -0.1, 0.0); group.add(mag);
-                const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.022, 0.55, 8), darkMetalMat); barrel.rotation.x = Math.PI/2; barrel.position.set(0, 0.09, -0.48); group.add(barrel);
-                const gasTube = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.3, 6), darkMetalMat); gasTube.rotation.x = Math.PI/2; gasTube.position.set(0, 0.12, -0.42); group.add(gasTube);
-                const frontSight = new THREE.Mesh(new THREE.BoxGeometry(0.025, 0.05, 0.025), darkMetalMat); frontSight.position.set(0, 0.15, -0.65); group.add(frontSight);
-                const rearSight = new THREE.Mesh(new THREE.BoxGeometry(0.025, 0.04, 0.025), darkMetalMat); rearSight.position.set(0, 0.14, -0.18); group.add(rearSight);
-                leftHandPos.set(0.2, -0.18, -0.42);
-                rightHandPos.set(-0.2, -0.22, 0.07);
+                const receiver = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.13, 0.5), mainMat); receiver.position.set(0, 0.07, -0.1); group.add(receiver);
+                const handguard = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.08, 0.25), woodMat); handguard.position.set(0, 0.04, -0.38); group.add(handguard);
+                const stock = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.12, 0.35), woodMat); stock.position.set(0, 0.04, 0.25); group.add(stock);
+                const grip = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.12, 0.06), plasticMat); grip.position.set(0, -0.06, 0.09); grip.rotation.x = 0.25; group.add(grip);
+                const mag = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.22, 0.08), darkMetalMat); mag.position.set(0, -0.13, 0.0); group.add(mag);
+                const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.025, 0.65, 8), darkMetalMat); barrel.rotation.x = Math.PI/2; barrel.position.set(0, 0.1, -0.58); group.add(barrel);
+                const gasTube = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.35, 6), darkMetalMat); gasTube.rotation.x = Math.PI/2; gasTube.position.set(0, 0.13, -0.48); group.add(gasTube);
+                const frontSight = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.07, 0.04), darkMetalMat); frontSight.position.set(0, 0.16, -0.78); group.add(frontSight);
+                const rearSight = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.06, 0.04), darkMetalMat); rearSight.position.set(0, 0.15, -0.22); group.add(rearSight);
+                leftHandPos.set(0.22, -0.2, -0.5);
+                rightHandPos.set(-0.22, -0.26, 0.09);
             } else if (currentWeapon === 'm4a4') {
-                const receiver = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.12, 0.4), skinMat); receiver.position.set(0, 0.06, -0.1); group.add(receiver);
-                const handguard = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.07, 0.22), darkMetalMat); handguard.position.set(0, 0.03, -0.32); group.add(handguard);
-                const stock = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.09, 0.28), plasticMat); stock.position.set(0, 0.04, 0.2); group.add(stock);
-                const grip = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.09, 0.05), plasticMat); grip.position.set(0, -0.05, 0.07); group.add(grip);
-                const mag = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.17, 0.06), darkMetalMat); mag.position.set(0, -0.09, 0.0); group.add(mag);
-                const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.022, 0.5, 8), darkMetalMat); barrel.rotation.x = Math.PI/2; barrel.position.set(0, 0.09, -0.45); group.add(barrel);
-                const rail = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.015, 0.25), new THREE.MeshStandardMaterial({color:0x555555, roughness:0.3, metalness:0.9})); rail.position.set(0, 0.15, -0.2); group.add(rail);
-                const frontSight = new THREE.Mesh(new THREE.BoxGeometry(0.025, 0.05, 0.025), darkMetalMat); frontSight.position.set(0, 0.14, -0.58); group.add(frontSight);
-                const rearSight = new THREE.Mesh(new THREE.BoxGeometry(0.025, 0.04, 0.025), darkMetalMat); rearSight.position.set(0, 0.14, -0.18); group.add(rearSight);
-                leftHandPos.set(0.18, -0.18, -0.4);
-                rightHandPos.set(-0.18, -0.22, 0.07);
+                const receiver = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.13, 0.5), mainMat); receiver.position.set(0, 0.07, -0.1); group.add(receiver);
+                const handguard = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, 0.28), darkMetalMat); handguard.position.set(0, 0.04, -0.38); group.add(handguard);
+                const stock = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.1, 0.32), plasticMat); stock.position.set(0, 0.05, 0.25); group.add(stock);
+                const grip = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.1, 0.06), plasticMat); grip.position.set(0, -0.05, 0.09); group.add(grip);
+                const mag = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.2, 0.08), darkMetalMat); mag.position.set(0, -0.11, 0.0); group.add(mag);
+                const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.025, 0.6, 8), darkMetalMat); barrel.rotation.x = Math.PI/2; barrel.position.set(0, 0.1, -0.55); group.add(barrel);
+                const rail = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.02, 0.3), new THREE.MeshStandardMaterial({color:0x555555, roughness:0.3, metalness:0.9})); rail.position.set(0, 0.16, -0.24); group.add(rail);
+                const frontSight = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.07, 0.04), darkMetalMat); frontSight.position.set(0, 0.15, -0.68); group.add(frontSight);
+                const rearSight = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.06, 0.04), darkMetalMat); rearSight.position.set(0, 0.15, -0.22); group.add(rearSight);
+                leftHandPos.set(0.2, -0.2, -0.48);
+                rightHandPos.set(-0.2, -0.26, 0.09);
             } else if (currentWeapon === 'awp') {
-                const body = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.13, 0.7), skinMat); body.position.set(0, 0.06, -0.25); group.add(body);
-                const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.025, 0.85, 8), darkMetalMat); barrel.rotation.x = Math.PI/2; barrel.position.set(0, 0.09, -0.7); group.add(barrel);
-                const scope = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.045, 0.3, 8), darkMetalMat); scope.rotation.x = Math.PI/2; scope.position.set(0, 0.18, -0.3); group.add(scope);
-                const stock = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.1, 0.35), plasticMat); stock.position.set(0, 0.04, 0.25); group.add(stock);
-                const mag = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.15, 0.06), darkMetalMat); mag.position.set(0, -0.08, 0.05); group.add(mag);
-                const bipod = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.02, 0.08), darkMetalMat); bipod.position.set(0, -0.25, -0.45); group.add(bipod);
-                const bipodLeg1 = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.35, 0.02), darkMetalMat); bipodLeg1.position.set(0.06, -0.3, -0.45); group.add(bipodLeg1);
-                const bipodLeg2 = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.35, 0.02), darkMetalMat); bipodLeg2.position.set(-0.06, -0.3, -0.45); group.add(bipodLeg2);
-                leftHandPos.set(0.18, -0.22, -0.6);
-                rightHandPos.set(-0.18, -0.22, 0.05);
+                const body = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.15, 0.8), mainMat); body.position.set(0, 0.08, -0.3); group.add(body);
+                const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.03, 1.0, 8), darkMetalMat); barrel.rotation.x = Math.PI/2; barrel.position.set(0, 0.11, -0.85); group.add(barrel);
+                const scope = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.055, 0.4, 8), darkMetalMat); scope.rotation.x = Math.PI/2; scope.position.set(0, 0.22, -0.4); group.add(scope);
+                const stock = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.12, 0.4), plasticMat); stock.position.set(0, 0.06, 0.3); group.add(stock);
+                const mag = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.18, 0.08), darkMetalMat); mag.position.set(0, -0.1, 0.06); group.add(mag);
+                const bipod = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.04, 0.12), darkMetalMat); bipod.position.set(0, -0.3, -0.55); group.add(bipod);
+                const bipodLeg1 = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.45, 0.04), darkMetalMat); bipodLeg1.position.set(0.08, -0.4, -0.55); group.add(bipodLeg1);
+                const bipodLeg2 = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.45, 0.04), darkMetalMat); bipodLeg2.position.set(-0.08, -0.4, -0.55); group.add(bipodLeg2);
+                leftHandPos.set(0.22, -0.28, -0.72);
+                rightHandPos.set(-0.22, -0.28, 0.07);
             } else if (currentWeapon === 'usps') {
-                const slide = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.07, 0.2), skinMat); slide.position.set(0, 0.06, -0.05); group.add(slide);
-                const frame = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.05, 0.14), plasticMat); frame.position.set(0, 0.01, -0.02); group.add(frame);
-                const grip = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.09, 0.04), plasticMat); grip.position.set(0, -0.05, 0.03); group.add(grip);
-                const suppressor = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 0.25, 8), darkMetalMat); suppressor.rotation.x = Math.PI/2; suppressor.position.set(0, 0.07, -0.22); group.add(suppressor);
-                const triggerGuard = new THREE.Mesh(new THREE.TorusGeometry(0.02, 0.008, 6, 12, Math.PI), darkMetalMat); triggerGuard.position.set(0, -0.03, -0.05); triggerGuard.rotation.z = Math.PI/2; group.add(triggerGuard);
-                leftHandPos.set(0.13, -0.12, -0.12);
-                rightHandPos.set(-0.13, -0.18, 0.03);
+                const slide = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.09, 0.25), mainMat); slide.position.set(0, 0.08, -0.06); group.add(slide);
+                const frame = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.07, 0.18), plasticMat); frame.position.set(0, 0.02, -0.02); group.add(frame);
+                const grip = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.12, 0.06), plasticMat); grip.position.set(0, -0.07, 0.05); group.add(grip);
+                const suppressor = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, 0.35, 8), darkMetalMat); suppressor.rotation.x = Math.PI/2; suppressor.position.set(0, 0.09, -0.28); group.add(suppressor);
+                const triggerGuard = new THREE.Mesh(new THREE.TorusGeometry(0.03, 0.01, 6, 12, Math.PI), darkMetalMat); triggerGuard.position.set(0, -0.04, -0.07); triggerGuard.rotation.z = Math.PI/2; group.add(triggerGuard);
+                leftHandPos.set(0.15, -0.16, -0.15);
+                rightHandPos.set(-0.15, -0.23, 0.04);
             } else if (currentWeapon === 'knife') {
-                const blade = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.28, 0.015), new THREE.MeshStandardMaterial({color:0xcccccc, roughness:0.2, metalness:0.9})); blade.position.set(0, 0.15, 0); group.add(blade);
-                const handle = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.2, 0.04), plasticMat); handle.position.set(0, -0.08, 0); group.add(handle);
-                const guard = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.03, 0.05), new THREE.MeshStandardMaterial({color:0x888888, roughness:0.3, metalness:0.8})); guard.position.set(0, 0.02, 0); group.add(guard);
-                leftHandPos.set(0.13, -0.03, -0.03);
-                rightHandPos.set(-0.12, -0.08, 0.15);
+                const blade = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.35, 0.02), new THREE.MeshStandardMaterial({color:0xcccccc, roughness:0.2, metalness:0.9})); blade.position.set(0, 0.18, 0); group.add(blade);
+                const handle = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.25, 0.06), plasticMat); handle.position.set(0, -0.1, 0); group.add(handle);
+                const guard = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.05, 0.07), new THREE.MeshStandardMaterial({color:0x888888, roughness:0.3, metalness:0.8})); guard.position.set(0, 0.03, 0); group.add(guard);
+                leftHandPos.set(0.15, -0.04, -0.04);
+                rightHandPos.set(-0.14, -0.12, 0.18);
             } else if (currentWeapon === 'karambit') {
-                const curve = new THREE.CubicBezierCurve3(new THREE.Vector3(0,0,0), new THREE.Vector3(0.06,0.18,0), new THREE.Vector3(0.18,0.3,0), new THREE.Vector3(0.15,0.42,0));
-                const bladeGeo = new THREE.TubeGeometry(curve, 24, 0.025, 8, false);
-                const blade = new THREE.Mesh(bladeGeo, new THREE.MeshStandardMaterial({color:0xcccccc, roughness:0.2, metalness:0.9})); blade.rotation.z = -Math.PI/2; blade.position.set(0.1, 0.12, 0); group.add(blade);
-                const ringGeo = new THREE.TorusGeometry(0.055, 0.02, 8, 16); const ring = new THREE.Mesh(ringGeo, darkMetalMat); ring.position.set(-0.03, -0.15, 0); ring.rotation.x = Math.PI/2; group.add(ring);
-                const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.18, 8), plasticMat); handle.position.set(0, -0.06, 0); group.add(handle);
-                leftHandPos.set(0.12, -0.06, 0.06);
-                rightHandPos.set(-0.1, -0.15, 0.0);
+                const curve = new THREE.CubicBezierCurve3(new THREE.Vector3(0,0,0), new THREE.Vector3(0.08,0.22,0), new THREE.Vector3(0.22,0.38,0), new THREE.Vector3(0.18,0.5,0));
+                const bladeGeo = new THREE.TubeGeometry(curve, 24, 0.03, 8, false);
+                const blade = new THREE.Mesh(bladeGeo, new THREE.MeshStandardMaterial({color:0xcccccc, roughness:0.2, metalness:0.9})); blade.rotation.z = -Math.PI/2; blade.position.set(0.12, 0.14, 0); group.add(blade);
+                const ringGeo = new THREE.TorusGeometry(0.07, 0.025, 8, 16); const ring = new THREE.Mesh(ringGeo, darkMetalMat); ring.position.set(-0.04, -0.18, 0); ring.rotation.x = Math.PI/2; group.add(ring);
+                const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.22, 8), plasticMat); handle.position.set(0, -0.08, 0); group.add(handle);
+                leftHandPos.set(0.14, -0.08, 0.08);
+                rightHandPos.set(-0.12, -0.2, 0.0);
             } else if (currentWeapon === 'butterfly') {
-                const blade = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.25, 0.015), new THREE.MeshStandardMaterial({color:0xcccccc, roughness:0.2, metalness:0.9})); blade.position.set(0, 0.1, 0); group.add(blade);
-                const pivot = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.05, 8), darkMetalMat); pivot.position.set(0, -0.03, 0); group.add(pivot);
-                const handle1 = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.15, 0.04), plasticMat); handle1.position.set(0.05, -0.1, 0); handle1.rotation.z = 0.35; group.add(handle1);
-                const handle2 = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.15, 0.04), plasticMat); handle2.position.set(-0.05, -0.1, 0); handle2.rotation.z = -0.35; group.add(handle2);
-                leftHandPos.set(0.12, -0.1, -0.06);
-                rightHandPos.set(-0.12, -0.1, 0.06);
+                const blade = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.32, 0.02), new THREE.MeshStandardMaterial({color:0xcccccc, roughness:0.2, metalness:0.9})); blade.position.set(0, 0.13, 0); group.add(blade);
+                const pivot = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.07, 8), darkMetalMat); pivot.position.set(0, -0.04, 0); group.add(pivot);
+                const handle1 = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.2, 0.06), plasticMat); handle1.position.set(0.07, -0.14, 0); handle1.rotation.z = 0.45; group.add(handle1);
+                const handle2 = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.2, 0.06), plasticMat); handle2.position.set(-0.07, -0.14, 0); handle2.rotation.z = -0.45; group.add(handle2);
+                leftHandPos.set(0.15, -0.14, -0.08);
+                rightHandPos.set(-0.15, -0.14, 0.08);
             }
 
             weaponModel = group;
@@ -682,12 +654,7 @@
             fireCooldown = wd.fireRate; playerAmmo.current--;
             if (currentWeapon === 'knife' || currentWeapon === 'karambit' || currentWeapon === 'butterfly') {
                 const range = 2.5; let closest = null, closestDist = range;
-                for (const bot of bots) {
-                    if (!bot.alive) continue;
-                    const dx = bot.x-player.x, dz = bot.z-player.z; const dist = Math.sqrt(dx*dx+dz*dz);
-                    const angle = Math.atan2(dx, -dz) - player.yaw;
-                    if (dist < closestDist && Math.abs(angle) < 0.7) { closestDist = dist; closest = bot; }
-                }
+                for (const bot of bots) { if (!bot.alive) continue; const dx = bot.x-player.x, dz = bot.z-player.z; const dist = Math.sqrt(dx*dx+dz*dz); const angle = Math.atan2(dx, -dz) - player.yaw; if (dist < closestDist && Math.abs(angle) < 0.7) { closestDist = dist; closest = bot; } }
                 if (closest) { damageBot(closest, wd.damage); showHitMarker(); }
             } else {
                 const spread = wd.recoil * (Math.random()-0.5)*2;
@@ -697,11 +664,7 @@
                 let hitBot = null;
                 if (intersects.length > 0 && intersects[0].distance < 150) {
                     const hitPoint = intersects[0].point; createTracer(hitPoint);
-                    for (const bot of bots) {
-                        if (!bot.alive) continue;
-                        const distToHit = hitPoint.distanceTo(new THREE.Vector3(bot.x, 1.3, bot.z));
-                        if (distToHit < 1.2 && intersects[0].distance < 80) { hitBot = bot; break; }
-                    }
+                    for (const bot of bots) { if (!bot.alive) continue; const distToHit = hitPoint.distanceTo(new THREE.Vector3(bot.x, 1.3, bot.z)); if (distToHit < 1.2 && intersects[0].distance < 80) { hitBot = bot; break; } }
                     if (hitBot) { damageBot(hitBot, wd.damage); showHitMarker(); }
                 }
                 muzzleFlashLight.intensity = 8; setTimeout(() => { muzzleFlashLight.intensity = 0; }, 50);
