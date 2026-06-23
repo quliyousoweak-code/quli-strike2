@@ -222,7 +222,7 @@
     <script type="module">
         import * as THREE from 'three';
 
-        // Глобальные переменные
+        // ---------- Глобальные переменные ----------
         let mouseSensitivity = 0.5;
         let playerNickname = 'PlayerOne';
         let gameState = 'menu';
@@ -230,20 +230,16 @@
         let equippedSkins = {};
         let equippedGloves = null;
         let balance = 500;
-        let playerKills = 0;
-        let playerDeaths = 0;
-        let playerHP = 100;
-        let playerArmor = 50;
+        let playerKills = 0, playerDeaths = 0;
+        let playerHP = 100, playerArmor = 50;
         let playerAmmo = { current: 30, reserve: 90 };
         let currentWeapon = 'ak47';
-        let isReloading = false;
-        let reloadTimer = 0;
+        let isReloading = false, reloadTimer = 0;
         let fireCooldown = 0;
         let respawnCountdown = 0;
         let selectedCase = null;
         let rouletteActive = false;
-        let rouletteItems = [];
-        let rouletteResult = null;
+        let rouletteItems = [], rouletteResult = null;
         let scoreboardOpen = false;
         let roundMoney = 10000;
         let shopOpen = false;
@@ -297,6 +293,7 @@
         scene.add(sunLight);
         scene.add(new THREE.HemisphereLight(0xffeedd, 0x8d6e4b, 0.8));
 
+        // ---------- КАРТА DE_ANCIENT (полная) ----------
         const mapObjects = [];
         const collisionBoxes = [];
         function createWall(x, z, w, h, d, color = 0xc4a882) {
@@ -345,24 +342,72 @@
         }
         function buildAncientMap() {
             createGround();
+            // Внешние границы
             createWall(0, -35, 70, 6, 1, 0xa08060); createWall(0, 35, 70, 6, 1, 0xa08060);
             createWall(-35, 0, 1, 6, 70, 0xa08060); createWall(35, 0, 1, 6, 70, 0xa08060);
-            createWall(0, -8, 20, 4, 1.5, 0xb8956e); createWall(0, 8, 20, 4, 1.5, 0xb8956e);
-            createWall(-10, 0, 1.5, 4, 16, 0xb8956e); createWall(10, 0, 1.5, 4, 16, 0xb8956e);
-            createColumn(-8, -12, 0.6, 5); createColumn(8, -12, 0.6, 5);
-            createColumn(-8, 12, 0.6, 5); createColumn(8, 12, 0.6, 5);
-            createColumn(0, -18, 0.7, 5); createColumn(0, 18, 0.7, 5);
-            createWall(-22, -18, 8, 3, 2, 0x9b7b5b); createWall(-26, -14, 2, 3, 8, 0x9b7b5b);
-            createBox(-22, -20, 1.8, 0x7a5c3e); createBox(-18, -16, 1.5, 0x7a5c3e);
-            createWall(22, 18, 8, 3, 2, 0x9b7b5b); createWall(26, 14, 2, 3, 8, 0x9b7b5b);
-            createBox(22, 20, 1.8, 0x7a5c3e); createBox(18, 16, 1.5, 0x7a5c3e);
-            createBox(-5, -4, 1.5); createBox(5, -4, 1.5); createBox(-5, 4, 1.5); createBox(5, 4, 1.5);
-            createBox(-15, -2, 1.3); createBox(15, -2, 1.3); createBox(-15, 2, 1.3); createBox(15, 2, 1.3);
-            createBox(-10, -20, 1.6); createBox(10, 20, 1.6); createBox(0, -25, 1.4); createBox(0, 25, 1.4);
-            createWaterChannel(0, -28, 10, 2); createWaterChannel(0, 28, 10, 2);
+            // T Spawn (юго-запад)
+            createWall(-25, -25, 10, 4, 2, 0x9b8b6e);
+            createBox(-28, -28, 1.8, 0x7a5c3e); createBox(-22, -28, 1.8, 0x7a5c3e);
+            // Туннель к воде
+            createWall(-30, -15, 2, 4, 14, 0x8b7d6b);
+            createWall(-10, -10, 2, 4, 8, 0x8b7d6b);
+            createWall(-20, -8, 8, 3, 2, 0x7a6b5b);
+            // Вода
+            createWaterChannel(-30, 0, 10, 4);
+            // Руины (B-сайд)
+            createColumn(-25, 10, 0.8, 5, 0x9e8b6e);
+            createColumn(-15, 10, 0.8, 5, 0x9e8b6e);
+            createWall(-20, 15, 8, 4, 2, 0x8b7d6b);
+            // Мид (центр)
+            createWall(-5, -5, 8, 3, 2, 0x9b8b6e);
+            createWall(5, -5, 8, 3, 2, 0x9b8b6e);
+            createWall(0, -10, 2, 5, 8, 0xa08060);
+            // Хевен
+            createBox(10, -20, 2, 0x8a7a5b);
+            createWall(12, -22, 4, 2, 2, 0x7a6b5b);
+            createWall(8, -22, 4, 2, 2, 0x7a6b5b);
+            // Элбоу
+            createWall(-15, 5, 6, 3, 2, 0x8b7d6b);
+            createWall(-18, 8, 2, 3, 6, 0x8b7d6b);
+            // Донут
+            createColumn(15, 10, 1.2, 6, 0x9e8b6e);
+            createWall(10, 10, 4, 3, 2, 0x8b7d6b);
+            createWall(20, 10, 4, 3, 2, 0x8b7d6b);
+            createWall(15, 5, 2, 3, 6, 0x8b7d6b);
+            createWall(15, 15, 2, 3, 6, 0x8b7d6b);
+            // Пещера
+            createBox(18, 12, 2.5, 0x5a4c3e);
+            createBox(12, 12, 2.5, 0x5a4c3e);
+            createWall(15, 12, 6, 2, 2, 0x6a5b4b);
+            // Точка A
+            createColumn(25, 20, 0.8, 6, 0x9e8b6e);
+            createColumn(25, 28, 0.8, 6, 0x9e8b6e);
+            createWall(20, 25, 10, 5, 2, 0x8b7d6b);
+            createWall(30, 25, 2, 5, 8, 0x8b7d6b);
+            createBox(22, 22, 2, 0x7a5c3e);
+            createBox(28, 22, 2, 0x7a5c3e);
+            createBox(25, 28, 2, 0x7a5c3e);
+            createWall(20, 30, 8, 3, 2, 0x9b8b6e);
+            // Точка B
+            createColumn(20, -20, 0.7, 5, 0x9e8b6e);
+            createWall(18, -25, 8, 3, 2, 0x8b7d6b);
+            createBox(15, -22, 2, 0x7a5c3e);
+            createWaterChannel(25, -30, 4, 3);
+            // CT Spawn
+            createWall(-15, 30, 10, 5, 2, 0x9b8b6e);
+            createColumn(-10, 32, 1, 7, 0x9e8b6e);
+            createColumn(-20, 32, 1, 7, 0x9e8b6e);
+            createWall(-5, 35, 20, 4, 2, 0xa08060);
+            // Дополнительные укрытия
+            createBox(-12, -15, 1.5); createBox(12, -15, 1.5);
+            createWall(-8, 0, 4, 2, 2, 0x7a6b5b);
+            createWall(8, 0, 4, 2, 2, 0x7a6b5b);
+            createColumn(0, 20, 0.6, 5);
+            createColumn(0, -20, 0.6, 5);
         }
         buildAncientMap();
 
+        // ---------- ОРУЖИЕ НА ЭКРАНЕ ----------
         const weaponGroup = new THREE.Group();
         camera.add(weaponGroup);
         weaponGroup.position.set(0.35, -0.3, -0.6);
@@ -370,7 +415,7 @@
         let weaponModel = null;
         let leftHand = null, rightHand = null;
 
-        // Перчатки
+        // Перчатки (текстуры)
         function createGloveTexture(skin = null) {
             const c = document.createElement('canvas');
             c.width = 512; c.height = 512;
@@ -584,11 +629,9 @@
                 leftHandPos.set(0.15, -0.16, -0.15);
                 rightHandPos.set(-0.15, -0.23, 0.04);
             } else if (currentWeapon === 'knife') {
-                // Нож: лезвие вверх, рукоять в правой руке, левая поддерживает снизу
                 const blade = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.35, 0.02), new THREE.MeshStandardMaterial({color:0xcccccc, roughness:0.2, metalness:0.9})); blade.position.set(0, 0.18, 0); group.add(blade);
                 const handle = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.25, 0.06), plasticMat); handle.position.set(0, -0.1, 0); group.add(handle);
                 const guard = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.05, 0.07), new THREE.MeshStandardMaterial({color:0x888888, roughness:0.3, metalness:0.8})); guard.position.set(0, 0.03, 0); group.add(guard);
-                // Новые позиции: правая рука выше, левая снизу
                 leftHandPos.set(0.12, -0.08, -0.08);
                 rightHandPos.set(-0.1, -0.02, 0.15);
             } else if (currentWeapon === 'karambit') {
@@ -597,7 +640,6 @@
                 const blade = new THREE.Mesh(bladeGeo, new THREE.MeshStandardMaterial({color:0xcccccc, roughness:0.2, metalness:0.9})); blade.rotation.z = -Math.PI/2; blade.position.set(0.12, 0.14, 0); group.add(blade);
                 const ringGeo = new THREE.TorusGeometry(0.07, 0.025, 8, 16); const ring = new THREE.Mesh(ringGeo, darkMetalMat); ring.position.set(-0.04, -0.18, 0); ring.rotation.x = Math.PI/2; group.add(ring);
                 const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.22, 8), plasticMat); handle.position.set(0, -0.08, 0); group.add(handle);
-                // Карамбит: правая рука на кольце, левая поддерживает рукоять
                 leftHandPos.set(0.1, -0.12, 0.05);
                 rightHandPos.set(-0.08, -0.05, 0.12);
             } else if (currentWeapon === 'butterfly') {
@@ -605,7 +647,6 @@
                 const pivot = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.07, 8), darkMetalMat); pivot.position.set(0, -0.04, 0); group.add(pivot);
                 const handle1 = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.2, 0.06), plasticMat); handle1.position.set(0.07, -0.14, 0); handle1.rotation.z = 0.45; group.add(handle1);
                 const handle2 = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.2, 0.06), plasticMat); handle2.position.set(-0.07, -0.14, 0); handle2.rotation.z = -0.45; group.add(handle2);
-                // Бабочка: руки на рукоятях
                 leftHandPos.set(0.13, -0.16, -0.05);
                 rightHandPos.set(-0.13, -0.16, 0.05);
             }
@@ -617,7 +658,7 @@
         }
         updateWeaponModel();
 
-        // Боты
+        // ---------- БОТЫ ----------
         const bots = [];
         const botGeom = new THREE.CapsuleGeometry(0.35, 1.3, 4, 8);
         const botHeadGeom = new THREE.SphereGeometry(0.25, 8, 6);
