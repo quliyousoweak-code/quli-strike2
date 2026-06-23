@@ -744,7 +744,7 @@
         window.openCasePrompt = function(caseIndex) {
             if (balance < cases[caseIndex].price) { alert('Недостаточно монет!'); return; }
             selectedCase = cases[caseIndex]; const pool = selectedCase.skins; const totalWeight = pool.reduce((s,sk) => s+sk.weight, 0);
-            rouletteItems = []; for (let i=0; i<1000; i++) { let r = Math.random()*totalWeight; let picked = pool[0]; for (const sk of pool) { r -= sk.weight; if (r <= 0) { picked = sk; break; } } rouletteItems.push(picked); }
+            rouletteItems = []; for (let i=0; i<8000; i++) { let r = Math.random()*totalWeight; let picked = pool[0]; for (const sk of pool) { r -= sk.weight; if (r <= 0) { picked = sk; break; } } rouletteItems.push(picked); }
             rouletteResult = rouletteItems[Math.floor(Math.random()*rouletteItems.length)];
             const displayItems = [...rouletteItems, ...rouletteItems];
             const strip = document.getElementById('rouletteStrip'); strip.innerHTML = displayItems.map(s => `<div class="roulette-item" style="background:${s.color}33;border:2px solid ${s.color};color:${s.color};">${s.name}<br><small>${s.rarity}</small></div>`).join('');
@@ -760,7 +760,7 @@
             const targetOffset = -(targetRawIndex * itemWidth) + (600/2 - itemWidth/2);
             const startOffset = parseFloat(strip.style.transform.replace('translateX(','').replace('px)','')) || 0;
             const totalScroll = targetOffset - startOffset - (totalItems * 2 * itemWidth);
-            const duration = 2000; // 2 секунды – оригинальная быстрая прокрутка
+            const duration = 2000; // 2 секунды
             const startTime = Date.now();
             document.getElementById('rouletteOpenBtn').disabled = true;
             function animate() {
