@@ -1,4 +1,4 @@
-\<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -31,7 +31,7 @@
         #profileBlock .info .balance { font-size:13px; color:#ffd700; font-weight:600; }
         #inventoryScreen, #casesScreen, #shopScreen, #settingsScreen { background:#0d0d0d; flex-direction:column; align-items:center; gap:16px; padding:40px; overflow-y:auto; }
         #inventoryScreen h2, #casesScreen h2, #shopScreen h2, #settingsScreen h2 { font-size:32px; letter-spacing:4px; color:#fff; margin-bottom:10px; }
-        .card-grid { display:flex; flex-wrap:wrap; gap:14px; justify-content:center; max-width:900px; }
+        .card-grid { display:flex; flex-wrap:wrap; gap:14px; justify-content:center; max-width:1200px; }
         .skin-card { width:150px; height:220px; border:2px solid #2a2a2a; border-radius:10px; display:flex; flex-direction:column; align-items:center; justify-content:space-between; padding:12px; transition:all 0.3s; cursor:pointer; position:relative; }
         .skin-card:hover { border-color:#fff; transform:translateY(-5px); box-shadow:0 10px 30px rgba(0,0,0,0.5); }
         .skin-card.equipped { border-color:#9c27b0 !important; box-shadow:0 0 20px rgba(156,39,176,0.4) !important; }
@@ -43,11 +43,12 @@
         .skin-card .sell-btn { background:#3a1010; color:#ffaaaa; }
         .skin-card .equip-btn:hover { background:#333; color:#fff; }
         .skin-card .sell-btn:hover { background:#5a1a1a; color:#ffcccc; }
-        .case-card { width:200px; height:260px; background:linear-gradient(145deg, #1e1e1e, #111); border:2px solid #333; border-radius:14px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; cursor:pointer; transition:all 0.3s; box-shadow:0 6px 18px rgba(0,0,0,0.4); }
+        .case-card { width:200px; height:300px; background:linear-gradient(145deg, #1e1e1e, #111); border:2px solid #333; border-radius:14px; display:flex; flex-direction:column; align-items:center; justify-content:space-between; gap:8px; cursor:pointer; transition:all 0.3s; box-shadow:0 6px 18px rgba(0,0,0,0.4); padding:16px; }
         .case-card:hover { border-color:#ffd700; box-shadow:0 0 30px rgba(255,215,0,0.3); transform:translateY(-5px); }
-        .case-card .case-icon { width:80px; height:80px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:40px; background:rgba(255,255,255,0.05); }
+        .case-card .case-view { width:160px; height:160px; border-radius:8px; overflow:hidden; }
         .case-card .case-name { font-weight:700; color:#fff; font-size:14px; }
         .case-card .case-price { color:#ffd700; font-weight:600; }
+        .case-open-btn { padding:8px 20px; font-size:12px; margin-top:4px; }
         #rouletteOverlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.65); backdrop-filter:blur(6px); z-index:100; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px; pointer-events:none; opacity:0; transition:opacity 0.3s; }
         #rouletteOverlay.active { opacity:1; pointer-events:all; }
         #rouletteStrip { display:flex; gap:4px; will-change:transform; }
@@ -734,140 +735,150 @@
         ];
 
         const cases = [
-            { name: 'Emerald Case', price: 3333, icon: '💎', color: '#00c853', skins: allSkins },
-            { name: 'Neon Case', price: 1999, icon: '🌈', color: '#ff4081', skins: allSkins },
-            { name: 'Elite Case', price: 777, icon: '👑', color: '#ffd700', skins: allSkins.filter(s => ['Restricted','Classified','Covert','Gold'].includes(s.rarity)) },
+            { name: 'Emerald Case', price: 3333, color: '#00c853', skins: allSkins },
+            { name: 'Neon Case', price: 1999, color: '#ff4081', skins: allSkins },
+            { name: 'Elite Case', price: 777, color: '#ffd700', skins: allSkins.filter(s => ['Restricted','Classified','Covert','Gold'].includes(s.rarity)) },
         ];
 
-        // 3D-модели кейсов для меню
-        let caseModels = [];
-        function createCaseModel(caseData) {
+        // 3D-модели кейсов
+        const caseScenes = {};
+        function createCaseModel(caseData, container) {
+            const w = container.clientWidth || 160;
+            const h = container.clientHeight || 160;
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x1a1a1a);
+            const cam = new THREE.PerspectiveCamera(45, w / h, 0.1, 10);
+            cam.position.set(2, 1.5, 2.5);
+            cam.lookAt(0, 0, 0);
+
+            const renderer3d = new THREE.WebGLRenderer({ antialias: true });
+            renderer3d.setSize(w, h);
+            container.appendChild(renderer3d.domElement);
+
+            const light = new THREE.DirectionalLight(0xffffff, 1.2);
+            light.position.set(2, 3, 2);
+            scene.add(light);
+            scene.add(new THREE.AmbientLight(0x404040, 1.0));
+
+            // Кейс
             const group = new THREE.Group();
-            // Основание ящика
-            const bodyGeo = new THREE.BoxGeometry(1.2, 0.8, 0.6);
-            const bodyMat = new THREE.MeshStandardMaterial({ color: 0x4a4a4a, roughness: 0.5, metalness: 0.7 });
-            const body = new THREE.Mesh(bodyGeo, bodyMat);
-            body.castShadow = true;
-            body.receiveShadow = true;
+            const bodyMat = new THREE.MeshStandardMaterial({ color: caseData.color, roughness: 0.4, metalness: 0.7 });
+            const accentMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.3, metalness: 0.9 });
+            const hazardMat = new THREE.MeshStandardMaterial({ color: 0xffaa00, roughness: 0.5 });
+
+            const body = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.6, 0.4), bodyMat);
             group.add(body);
-            // Крышка
-            const lidGeo = new THREE.BoxGeometry(1.2, 0.1, 0.6);
-            const lidMat = new THREE.MeshStandardMaterial({ color: 0x3a3a3a, roughness: 0.4, metalness: 0.8 });
-            const lid = new THREE.Mesh(lidGeo, lidMat);
-            lid.position.y = 0.45;
-            lid.castShadow = true;
-            group.add(lid);
+
+            // Усиленные углы
+            const cornerGeo = new THREE.BoxGeometry(0.15, 0.15, 0.1);
+            const corners = [
+                [0.375, 0.225, 0.15], [0.375, -0.225, 0.15], [-0.375, 0.225, 0.15], [-0.375, -0.225, 0.15],
+                [0.375, 0.225, -0.15], [0.375, -0.225, -0.15], [-0.375, 0.225, -0.15], [-0.375, -0.225, -0.15]
+            ];
+            corners.forEach(pos => {
+                const corner = new THREE.Mesh(cornerGeo, accentMat);
+                corner.position.set(...pos);
+                group.add(corner);
+            });
+
             // Замок
-            const lockGeo = new THREE.CylinderGeometry(0.1, 0.1, 0.15, 8);
-            const lockMat = new THREE.MeshStandardMaterial({ color: 0xcccccc, roughness: 0.3, metalness: 0.9 });
-            const lock = new THREE.Mesh(lockGeo, lockMat);
-            lock.position.set(0, 0.2, 0.31);
-            lock.castShadow = true;
+            const lock = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.1, 0.08), accentMat);
+            lock.position.set(0, -0.25, 0.22);
             group.add(lock);
-            // Ручка
-            const handleGeo = new THREE.TorusGeometry(0.1, 0.03, 8, 16);
-            const handleMat = new THREE.MeshStandardMaterial({ color: 0x888888, roughness: 0.3, metalness: 0.9 });
-            const handle = new THREE.Mesh(handleGeo, handleMat);
-            handle.position.set(0, 0.2, -0.31);
-            handle.rotation.x = Math.PI/2;
-            handle.castShadow = true;
-            group.add(handle);
-            // Полосы опасности (жёлтые полоски)
-            const stripeGeo = new THREE.BoxGeometry(0.1, 0.05, 0.61);
-            const stripeMat = new THREE.MeshStandardMaterial({ color: 0xffaa00, roughness: 0.6 });
-            const stripe1 = new THREE.Mesh(stripeGeo, stripeMat);
-            stripe1.position.set(-0.4, 0.3, 0);
+            const keyhole = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.02, 8), new THREE.MeshStandardMaterial({ color: 0x000000 }));
+            keyhole.rotation.x = Math.PI/2;
+            keyhole.position.set(0, -0.25, 0.26);
+            group.add(keyhole);
+
+            // Ручки
+            const handleGeo = new THREE.TorusGeometry(0.06, 0.02, 8, 16);
+            const handle1 = new THREE.Mesh(handleGeo, accentMat);
+            handle1.position.set(0.5, 0, 0.15);
+            handle1.rotation.y = Math.PI/2;
+            group.add(handle1);
+            const handle2 = new THREE.Mesh(handleGeo, accentMat);
+            handle2.position.set(-0.5, 0, 0.15);
+            handle2.rotation.y = Math.PI/2;
+            group.add(handle2);
+
+            // Жёлтые полосы опасности
+            const stripeGeo = new THREE.BoxGeometry(0.05, 0.6, 0.41);
+            const stripe1 = new THREE.Mesh(stripeGeo, hazardMat);
+            stripe1.position.set(0.15, 0, 0);
             group.add(stripe1);
-            const stripe2 = new THREE.Mesh(stripeGeo, stripeMat);
-            stripe2.position.set(0.4, 0.3, 0);
+            const stripe2 = new THREE.Mesh(stripeGeo, hazardMat);
+            stripe2.position.set(-0.15, 0, 0);
             group.add(stripe2);
-            const stripe3 = new THREE.Mesh(stripeGeo, stripeMat);
-            stripe3.position.set(0, 0.3, 0);
-            group.add(stripe3);
-            // Текст "WEAPON CASE" (упрощённо, маленький прямоугольник как наклейка)
-            const labelGeo = new THREE.PlaneGeometry(0.5, 0.1);
-            const labelCanvas = document.createElement('canvas');
-            labelCanvas.width = 256;
-            labelCanvas.height = 64;
-            const ctx = labelCanvas.getContext('2d');
+
+            // Логотип (плоская наклейка)
+            const logoCanvas = document.createElement('canvas');
+            logoCanvas.width = 128; logoCanvas.height = 64;
+            const ctx = logoCanvas.getContext('2d');
             ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, 256, 64);
-            ctx.fillStyle = '#000000';
-            ctx.font = 'bold 20px Arial';
+            ctx.font = 'bold 14px Arial';
             ctx.textAlign = 'center';
-            ctx.fillText('WEAPON CASE', 128, 40);
-            const labelTex = new THREE.CanvasTexture(labelCanvas);
-            const labelMat = new THREE.MeshBasicMaterial({ map: labelTex });
-            const label = new THREE.Mesh(labelGeo, labelMat);
-            label.position.set(0, 0.4, 0.31);
-            group.add(label);
-            group.name = caseData.name;
-            group.userData = { caseIndex: cases.indexOf(caseData) };
-            return group;
+            ctx.fillText('WEAPON CASE', 64, 40);
+            const logoTexture = new THREE.CanvasTexture(logoCanvas);
+            const logoMat = new THREE.MeshBasicMaterial({ map: logoTexture, transparent: true });
+            const logoPlane = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.2), logoMat);
+            logoPlane.position.set(0, 0.15, 0.21);
+            group.add(logoPlane);
+
+            scene.add(group);
+            return { scene, cam, renderer3d, group };
         }
 
         function renderCases() {
             const grid = document.getElementById('casesGrid');
             grid.innerHTML = '';
-            // Удаляем старые 3D-модели кейсов
-            caseModels.forEach(m => scene.remove(m));
-            caseModels = [];
-            // Создаём новые 3D-модели и добавляем их в сцену (невидимые, пока экран кейсов не активен)
+            // Удаляем старые 3D-рендереры
+            for (const key in caseScenes) {
+                if (caseScenes[key]) {
+                    caseScenes[key].renderer3d.dispose();
+                    if (caseScenes[key].renderer3d.domElement.parentNode) {
+                        caseScenes[key].renderer3d.domElement.parentNode.removeChild(caseScenes[key].renderer3d.domElement);
+                    }
+                }
+            }
+            // Создаём карточки с 3D-кейсами
             cases.forEach((c, i) => {
-                const model = createCaseModel(c);
-                model.position.set(0, 0, 0);
-                model.visible = false;
-                scene.add(model);
-                caseModels.push(model);
-                // Добавляем карточку с информацией о кейсе
                 const card = document.createElement('div');
                 card.className = 'case-card';
                 card.style.borderColor = c.color;
-                card.innerHTML = `<div class="case-icon" style="background:${c.color}22;">${c.icon}</div>
+                card.innerHTML = `
+                    <div class="case-view" id="caseView${i}" style="width:160px;height:160px;"></div>
                     <div class="case-name">${c.name}</div>
-                    <div class="case-price">💰 ${c.price} монет</div>`;
-                card.onclick = () => openCasePrompt(i);
+                    <div class="case-price">💰 ${c.price} монет</div>
+                    <button class="btn gold case-open-btn" id="openCaseBtn${i}">Открыть</button>
+                `;
                 grid.appendChild(card);
-            });
-        }
 
-        // При открытии экрана кейсов показываем 3D-модели
-        const originalShowScreen = showScreen;
-        window.showScreen = function(screenId) {
-            originalShowScreen(screenId);
-            if (screenId === 'casesScreen') {
-                caseModels.forEach(m => m.visible = true);
-                // Размещаем модели перед камерой для обзора
-                caseModels.forEach((m, i) => {
-                    m.position.set((i - 1) * 2, 0, -2);
-                    m.rotation.set(0, 0, 0);
+                // Вешаем обработчик открытия кейса
+                card.querySelector(`#openCaseBtn${i}`).addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    window.openCasePrompt(i);
                 });
-                // Включаем анимацию вращения
-                if (!window.caseAnimationId) {
-                    window.caseAnimationId = requestAnimationFrame(animateCaseModels);
-                }
-            } else {
-                caseModels.forEach(m => m.visible = false);
-                if (window.caseAnimationId) {
-                    cancelAnimationFrame(window.caseAnimationId);
-                    window.caseAnimationId = null;
-                }
-            }
-        };
 
-        function animateCaseModels() {
-            if (currentScreen !== 'casesScreen') {
-                window.caseAnimationId = null;
-                return;
-            }
-            caseModels.forEach((m, i) => {
-                m.rotation.y += 0.01;
-                m.rotation.x += 0.005;
-                m.position.y = Math.sin(Date.now() * 0.002 + i) * 0.1;
+                // 3D-сцена для кейса
+                setTimeout(() => {
+                    const container = document.getElementById(`caseView${i}`);
+                    if (container && !caseScenes[i]) {
+                        const caseScene = createCaseModel(c, container);
+                        caseScenes[i] = caseScene;
+                        // Анимация вращения
+                        function animateCase() {
+                            if (!caseScenes[i]) return;
+                            caseScene.group.rotation.y += 0.005;
+                            caseScene.renderer3d.render(caseScene.scene, caseScene.cam);
+                            requestAnimationFrame(animateCase);
+                        }
+                        animateCase();
+                    }
+                }, 100);
             });
-            window.caseAnimationId = requestAnimationFrame(animateCaseModels);
         }
 
+        // Прокрутка и рулетка остаются без изменений
         window.openCasePrompt = function(caseIndex) {
             if (balance < cases[caseIndex].price) { alert('Недостаточно монет!'); return; }
             selectedCase = cases[caseIndex]; const pool = selectedCase.skins; const totalWeight = pool.reduce((s,sk) => s+sk.weight, 0);
