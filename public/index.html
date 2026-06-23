@@ -33,117 +33,22 @@
         #inventoryScreen, #casesScreen, #shopScreen, #settingsScreen { background:#0d0d0d; flex-direction:column; align-items:center; gap:16px; padding:40px; overflow-y:auto; }
         #inventoryScreen h2, #casesScreen h2, #shopScreen h2, #settingsScreen h2 { font-size:32px; letter-spacing:4px; color:#fff; margin-bottom:10px; }
         .card-grid { display:flex; flex-wrap:wrap; gap:14px; justify-content:center; max-width:1200px; }
-        
-        /* Новый стиль инвентаря CS2 */
-        .skin-card { 
-            width: 160px; 
-            height: 200px; 
-            background: #1a1a1a; 
-            border: 2px solid #2a2a2a; 
-            border-radius: 4px; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: space-between; 
-            padding: 0; 
-            transition: all 0.2s; 
-            cursor: pointer; 
-            position: relative; 
-            overflow: hidden;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
-        }
-        .skin-card:hover { 
-            border-color: #fff; 
-            transform: translateY(-3px); 
-            box-shadow: 0 8px 16px rgba(0,0,0,0.7); 
-            z-index: 2;
-        }
-        .skin-card.equipped { 
-            border-color: #9c27b0 !important; 
-            box-shadow: 0 0 12px rgba(156,39,176,0.4); 
-        }
-        .skin-card .item-preview {
-            width: 100%;
-            height: 110px;
-            background: #2a2a2a;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            overflow: hidden;
-        }
-        .skin-card .item-preview canvas {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-        .skin-card .item-info {
-            width: 100%;
-            padding: 8px;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            background: #141414;
-        }
-        .skin-card .item-name {
-            font-size: 12px;
-            font-weight: 700;
-            color: #ddd;
-            text-align: center;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .skin-card .weapon-name {
-            font-size: 10px;
-            color: #888;
-            text-align: center;
-        }
-        .skin-card .rarity-label {
-            font-size: 9px;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            font-weight: 600;
-            text-align: center;
-        }
-        .skin-card .item-actions {
-            display: flex;
-            gap: 4px;
-            padding: 6px;
-            background: #0d0d0d;
-            width: 100%;
-            justify-content: center;
-        }
-        .equip-btn, .sell-btn, .open-btn {
-            padding: 4px 10px;
-            font-size: 10px;
-            font-weight: 700;
-            border: none;
-            background: #2a2a2a;
-            color: #aaa;
-            cursor: pointer;
-            border-radius: 2px;
-            transition: all 0.2s;
-            text-transform: uppercase;
-        }
-        .sell-btn { background: #3a1010; color: #ffaaaa; }
-        .open-btn { background: #2a2a2a; color: #ffd700; }
-        .equip-btn:hover, .open-btn:hover { background: #3a3a3a; color: #fff; }
-        .sell-btn:hover { background: #5a1a1a; color: #ffcccc; }
-        .equipped-badge {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: #9c27b0;
-            color: white;
-            font-size: 10px;
-            padding: 2px 6px;
-            border-radius: 2px;
-            font-weight: bold;
-            z-index: 3;
-        }
-
-        /* Остальные стили без изменений */
+        .skin-card { width:160px; height:200px; background:#1a1a1a; border:2px solid #2a2a2a; border-radius:4px; display:flex; flex-direction:column; align-items:center; justify-content:space-between; padding:0; transition:all 0.2s; cursor:pointer; position:relative; overflow:hidden; box-shadow:0 4px 8px rgba(0,0,0,0.5); }
+        .skin-card:hover { border-color:#fff; transform:translateY(-3px); box-shadow:0 8px 16px rgba(0,0,0,0.7); z-index:2; }
+        .skin-card.equipped { border-color:#9c27b0 !important; box-shadow:0 0 12px rgba(156,39,176,0.4); }
+        .skin-card .item-preview { width:100%; height:110px; background:#2a2a2a; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; }
+        .skin-card .item-preview img { width:100%; height:100%; object-fit:contain; }
+        .skin-card .item-info { width:100%; padding:8px; display:flex; flex-direction:column; gap:4px; background:#141414; }
+        .skin-card .item-name { font-size:12px; font-weight:700; color:#ddd; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .skin-card .weapon-name { font-size:10px; color:#888; text-align:center; }
+        .skin-card .rarity-label { font-size:9px; letter-spacing:1px; text-transform:uppercase; font-weight:600; text-align:center; }
+        .skin-card .item-actions { display:flex; gap:4px; padding:6px; background:#0d0d0d; width:100%; justify-content:center; }
+        .equip-btn, .sell-btn, .open-btn { padding:4px 10px; font-size:10px; font-weight:700; border:none; background:#2a2a2a; color:#aaa; cursor:pointer; border-radius:2px; transition:all 0.2s; text-transform:uppercase; }
+        .sell-btn { background:#3a1010; color:#ffaaaa; }
+        .open-btn { background:#2a2a2a; color:#ffd700; }
+        .equip-btn:hover, .open-btn:hover { background:#3a3a3a; color:#fff; }
+        .sell-btn:hover { background:#5a1a1a; color:#ffcccc; }
+        .equipped-badge { position:absolute; top:5px; right:5px; background:#9c27b0; color:white; font-size:10px; padding:2px 6px; border-radius:2px; font-weight:bold; z-index:3; }
         .case-card { width:200px; height:300px; background:linear-gradient(145deg, #1e1e1e, #111); border:2px solid #333; border-radius:14px; display:flex; flex-direction:column; align-items:center; justify-content:space-between; gap:8px; cursor:pointer; transition:all 0.3s; box-shadow:0 6px 18px rgba(0,0,0,0.4); padding:16px; }
         .case-card:hover { border-color:#ffd700; box-shadow:0 0 30px rgba(255,215,0,0.3); transform:translateY(-5px); }
         .case-card .case-view { width:160px; height:160px; border-radius:8px; overflow:hidden; }
@@ -158,7 +63,7 @@
         .roulette-item.win { border-color: #ffffff !important; box-shadow: 0 0 20px rgba(255,255,255,0.9); transform: scale(1.05); transition: 0.2s; }
         #winPopup { position:fixed; top:50%; left:50%; transform:translate(-50%, -50%) scale(0); background:#1a1a1a; border:3px solid #ffd700; border-radius:20px; padding:30px; z-index:110; text-align:center; transition:transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow:0 0 60px rgba(255,215,0,0.5); }
         #winPopup.show { transform:translate(-50%, -50%) scale(1); }
-        #hudOverlay { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); display:flex; gap:40px; align-items:flex-end; z-index:15; pointer-events:none; }
+        #hudOverlay { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); display:flex; gap:60px; align-items:flex-end; z-index:15; pointer-events:none; }
         .hud-panel { background:rgba(0,0,0,0.7); border:1px solid #333; border-radius:8px; padding:12px 18px; color:#fff; font-weight:700; font-size:14px; letter-spacing:1px; text-align:center; min-width:70px; }
         .hud-panel .val { font-size:28px; color:#9c27b0; }
         .hud-panel.ammo .val { color:#fff; }
@@ -272,9 +177,10 @@
         <p id="winItemRarity" style="font-size:14px;"></p>
         <button class="btn gold" onclick="closeWinPopup()">Забрать</button>
     </div>
+    <!-- HUD исправлен: броня, здоровье, патроны -->
     <div id="hudOverlay" style="display:none;">
-        <div class="hud-panel">❤️ Здоровье<div class="val" id="hudHP">100</div></div>
         <div class="hud-panel">🛡️ Броня<div class="val" id="hudArmor">50</div></div>
+        <div class="hud-panel">❤️ Здоровье<div class="val" id="hudHP">100</div></div>
         <div class="hud-panel ammo">🔫 Патроны<div class="val" id="hudAmmo">30/90</div></div>
     </div>
     <div id="crosshair" style="display:none;"><div class="dot"></div></div>
@@ -1463,7 +1369,7 @@
             if (gameState === 'dead') {
                 respawnCountdown -= dt;
                 document.getElementById('respawnTimer').textContent = Math.ceil(Math.max(0, respawnCountdown));
-                if (respawnCountdown <= 0) respawnPlayer();
+                if (respawnCountdown <= 0 && gameState === 'dead') respawnPlayer();
                 bots.forEach(b => updateBotAI(b, dt));
             }
 
