@@ -363,6 +363,114 @@
         let weaponModel = null;
         let leftHand = null, rightHand = null;
 
+        // Улучшенная текстура перчаток (PBR-стиль)
+        function createGloveTexture() {
+            const c = document.createElement('canvas');
+            c.width = 512; c.height = 512;
+            const ctx = c.getContext('2d');
+
+            // Базовая кожа
+            const grad = ctx.createLinearGradient(0, 0, 512, 512);
+            grad.addColorStop(0, '#3a2a2a');
+            grad.addColorStop(0.5, '#2c1e1e');
+            grad.addColorStop(1, '#1f1414');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, 512, 512);
+
+            // Кожаная текстура (мелкие поры)
+            for (let i = 0; i < 3000; i++) {
+                ctx.fillStyle = `rgba(0,0,0,${Math.random()*0.2})`;
+                ctx.fillRect(Math.random()*512, Math.random()*512, 2+Math.random()*4, 2+Math.random()*4);
+            }
+            // Швы
+            ctx.strokeStyle = '#111111';
+            ctx.lineWidth = 3;
+            for (let i = 0; i < 8; i++) {
+                const y = 60 + i*50;
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(512, y);
+                ctx.stroke();
+                // стежки
+                ctx.fillStyle = '#666666';
+                for (let x = 10; x < 512; x += 40) {
+                    ctx.fillRect(x, y-2, 10, 4);
+                }
+            }
+            // Металлические защитные вставки
+            ctx.fillStyle = '#555555';
+            for (let i = 0; i < 5; i++) {
+                ctx.fillRect(100 + i*80, 200, 30, 100);
+                ctx.fillStyle = '#777777';
+                ctx.fillRect(100 + i*80 + 5, 210, 20, 80);
+                ctx.fillStyle = '#555555';
+            }
+            // Пряжка
+            ctx.fillStyle = '#888888';
+            ctx.fillRect(200, 350, 112, 40);
+            ctx.fillStyle = '#aaaaaa';
+            ctx.fillRect(210, 360, 92, 20);
+            // Логотип на перчатке
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 24px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('OPERATOR', 256, 420);
+
+            return new THREE.CanvasTexture(c);
+        }
+
+        // Модель руки в перчатке (левая/правая)
+        function createGloveHand(side) {
+            const group = new THREE.Group();
+            const gloveTex = createGloveTexture();
+            const gloveMat = new THREE.MeshStandardMaterial({ map: gloveTex, roughness: 0.6, metalness: 0.3 });
+            const darkMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.4, metalness: 0.8 });
+
+            // Ладонь (основа)
+            const palm = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.18, 0.1), gloveMat);
+            palm.position.set(0, 0.06, 0);
+            group.add(palm);
+
+            // Большой палец
+            const thumb = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.1, 0.06), gloveMat);
+            thumb.position.set(side === 'left' ? 0.09 : -0.09, 0.1, -0.02);
+            thumb.rotation.z = side === 'left' ? -0.3 : 0.3;
+            group.add(thumb);
+
+            // Указательный палец
+            const index = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.12, 0.05), gloveMat);
+            index.position.set(side === 'left' ? 0.07 : -0.07, 0.2, 0.02);
+            group.add(index);
+
+            // Средний палец
+            const middle = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.13, 0.05), gloveMat);
+            middle.position.set(side === 'left' ? 0.03 : -0.03, 0.21, 0.02);
+            group.add(middle);
+
+            // Безымянный палец
+            const ring = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.11, 0.05), gloveMat);
+            ring.position.set(side === 'left' ? -0.01 : 0.01, 0.19, 0.02);
+            group.add(ring);
+
+            // Мизинец
+            const pinky = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.09, 0.04), gloveMat);
+            pinky.position.set(side === 'left' ? -0.05 : 0.05, 0.16, 0.02);
+            group.add(pinky);
+
+            // Защита запястья
+            const wristGuard = new THREE.Mesh(new THREE.BoxGeometry(0.13, 0.1, 0.11), darkMat);
+            wristGuard.position.set(0, -0.08, 0);
+            group.add(wristGuard);
+
+            return group;
+        }
+
+        function getSkinMaterial(weaponType) {
+            const skin = equippedSkins[weaponType];
+            if (skin) { const tex = createSkinTexture(skin); return new THREE.MeshStandardMaterial({ map: tex, roughness: 0.4, metalness: 0.6 }); }
+            return new THREE.MeshStandardMaterial({ color: weaponDefaults[weaponType].color, roughness: 0.5, metalness: 0.7 });
+        }
+
         function createSkinTexture(skin) {
             const c = document.createElement('canvas');
             c.width = 256; c.height = 256;
@@ -394,38 +502,29 @@
             return new THREE.CanvasTexture(c);
         }
 
-        function getSkinMaterial(weaponType) {
-            const skin = equippedSkins[weaponType];
-            if (skin) { const tex = createSkinTexture(skin); return new THREE.MeshStandardMaterial({ map: tex, roughness: 0.4, metalness: 0.6 }); }
-            return new THREE.MeshStandardMaterial({ color: weaponDefaults[weaponType].color, roughness: 0.5, metalness: 0.7 });
-        }
-
         function updateWeaponModel() {
             if (weaponModel) { weaponGroup.remove(weaponModel); }
             if (leftHand) weaponGroup.remove(leftHand);
             if (rightHand) weaponGroup.remove(rightHand);
 
-            const skinMat = getSkinMaterial(currentWeapon);
-            const darkMetalMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.4, metalness: 0.8 });
-            const woodMat = new THREE.MeshStandardMaterial({ color: 0x5c3a1e, roughness: 0.8, metalness: 0.1 });
-            const plasticMat = new THREE.MeshStandardMaterial({ color: 0x2a2a2a, roughness: 0.6, metalness: 0.2 });
-            // Простые бежевые руки-палки (майнкрафт стиль)
-            const handMat = new THREE.MeshStandardMaterial({ color: 0xd2a679, roughness: 0.7 });
-            const group = new THREE.Group();
-
-            // Левая рука – прямоугольный брусок
-            leftHand = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.25, 0.08), handMat);
-            leftHand.position.set(0.15, -0.12, 0.1);
+            // Создаем новые руки-перчатки
+            leftHand = createGloveHand('left');
+            leftHand.position.set(0.18, -0.1, 0.12);
             leftHand.rotation.z = -0.2;
             leftHand.rotation.x = 0.1;
             weaponGroup.add(leftHand);
 
-            // Правая рука – такой же брусок
-            rightHand = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.25, 0.08), handMat);
-            rightHand.position.set(-0.15, -0.12, 0.1);
+            rightHand = createGloveHand('right');
+            rightHand.position.set(-0.18, -0.1, 0.12);
             rightHand.rotation.z = 0.2;
             rightHand.rotation.x = 0.1;
             weaponGroup.add(rightHand);
+
+            const skinMat = getSkinMaterial(currentWeapon);
+            const darkMetalMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.4, metalness: 0.8 });
+            const woodMat = new THREE.MeshStandardMaterial({ color: 0x5c3a1e, roughness: 0.8, metalness: 0.1 });
+            const plasticMat = new THREE.MeshStandardMaterial({ color: 0x2a2a2a, roughness: 0.6, metalness: 0.2 });
+            const group = new THREE.Group();
 
             if (currentWeapon === 'ak47') {
                 const receiver = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.1, 0.35), skinMat); receiver.position.set(0, 0.05, -0.1); group.add(receiver);
@@ -635,7 +734,6 @@
         function showScreen(screenId) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('visible'));
             const screen = document.getElementById(screenId); if (screen) screen.classList.add('visible');
-            currentScreen = screenId;
             if (screenId !== 'playing') { setBlackBackground(); }
             if (screenId === 'menuScreen') { document.getElementById('uiLayer').classList.add('active'); updateProfileUI(); }
             if (screenId === 'inventoryScreen') renderInventory();
@@ -697,7 +795,6 @@
             }
         };
 
-        // Скины без ножей
         const baseSkins = [
             { name: 'Basic', weaponType: 'ak47', rarity: 'Consumer', color: '#9e9e9e', weight: 32 },
             { name: 'Matte Black', weaponType: 'm4a4', rarity: 'Consumer', weight: 32 },
@@ -754,7 +851,7 @@
             return 0.5;
         }
 
-        const caseScenes = {};
+        // Улучшенная модель кейса с детальной текстурой
         function createCaseModel(caseData, container) {
             const w = container.clientWidth || 160;
             const h = container.clientHeight || 160;
@@ -773,10 +870,61 @@
             scene.add(light);
             scene.add(new THREE.AmbientLight(0x404040, 1.0));
 
-            const group = new THREE.Group();
-            const bodyMat = new THREE.MeshStandardMaterial({ color: caseData.color, roughness: 0.4, metalness: 0.7 });
+            // Генерация текстуры кейса
+            const texCanvas = document.createElement('canvas');
+            texCanvas.width = 512; texCanvas.height = 512;
+            const ctx = texCanvas.getContext('2d');
+
+            // Основной цвет корпуса
+            const baseColor = caseData.color;
+            ctx.fillStyle = baseColor;
+            ctx.fillRect(0, 0, 512, 512);
+
+            // Рифлёная структура (вертикальные полосы)
+            ctx.fillStyle = 'rgba(0,0,0,0.2)';
+            for (let x = 20; x < 512; x += 40) {
+                ctx.fillRect(x, 0, 10, 512);
+            }
+            // Горизонтальные полосы для имитации металла
+            ctx.fillStyle = 'rgba(255,255,255,0.1)';
+            for (let y = 30; y < 512; y += 60) {
+                ctx.fillRect(0, y, 512, 5);
+            }
+
+            // Жёлтые полосы опасности
+            ctx.fillStyle = '#ffaa00';
+            ctx.fillRect(0, 400, 512, 20);
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 405, 512, 10);
+
+            // Логотип CS2 и надпись
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 36px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('WEAPON CASE', 256, 180);
+            ctx.font = 'italic bold 28px Arial';
+            ctx.fillText('QULI STRIKE', 256, 230);
+
+            // Серийные номера и детали
+            ctx.fillStyle = '#cccccc';
+            ctx.font = '16px monospace';
+            ctx.fillText('S/N: QS2-7741-ALPHA', 256, 340);
+
+            // Ручки (просто изображение)
+            ctx.fillStyle = '#444444';
+            ctx.fillRect(50, 440, 100, 30);
+            ctx.fillRect(362, 440, 100, 30);
+            ctx.fillStyle = '#222222';
+            ctx.fillRect(60, 445, 80, 20);
+            ctx.fillRect(372, 445, 80, 20);
+
+            const caseTexture = new THREE.CanvasTexture(texCanvas);
+
+            const bodyMat = new THREE.MeshStandardMaterial({ map: caseTexture, roughness: 0.5, metalness: 0.8 });
             const accentMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.3, metalness: 0.9 });
             const hazardMat = new THREE.MeshStandardMaterial({ color: 0xffaa00, roughness: 0.5 });
+
+            const group = new THREE.Group();
 
             const body = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.6, 0.4), bodyMat);
             group.add(body);
@@ -818,22 +966,11 @@
             stripe2.position.set(-0.15, 0, 0);
             group.add(stripe2);
 
-            const logoCanvas = document.createElement('canvas');
-            logoCanvas.width = 128; logoCanvas.height = 64;
-            const ctx = logoCanvas.getContext('2d');
-            ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 14px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText('WEAPON CASE', 64, 40);
-            const logoTexture = new THREE.CanvasTexture(logoCanvas);
-            const logoMat = new THREE.MeshBasicMaterial({ map: logoTexture, transparent: true });
-            const logoPlane = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.2), logoMat);
-            logoPlane.position.set(0, 0.15, 0.21);
-            group.add(logoPlane);
-
             scene.add(group);
             return { scene, cam, renderer3d, group };
         }
+
+        const caseScenes = {};
 
         function renderCases() {
             const grid = document.getElementById('casesGrid');
@@ -923,7 +1060,6 @@
             document.getElementById('winItemName').textContent = skin.name+' ('+weaponDefaults[skin.weaponType].name+')';
             document.getElementById('winItemRarity').textContent = skin.rarity;
             document.getElementById('winItemRarity').style.color = skin.color;
-            // Для редких скинов делаем рамку поярче
             if (['Restricted','Classified','Covert','Gold'].includes(skin.rarity)) {
                 popup.style.borderColor = skin.color;
                 popup.style.boxShadow = `0 0 60px ${skin.color}`;
@@ -1009,22 +1145,6 @@
             isReloading = false; reloadTimer = 0; fireCooldown = 0;
             updateWeaponModel(); updateHUD();
             updateWeaponSlotUI();
-        }
-
-        function switchWeapon(type) { 
-            if (currentWeapon===type || isReloading) return;
-            const slot = weaponDefaults[type]?.slot;
-            if (slot) {
-                weaponSlots[slot] = type;
-                if (activeSlot === slot) {
-                    currentWeapon = type;
-                    playerAmmo.current = weaponDefaults[type].magSize;
-                    playerAmmo.reserve = weaponDefaults[type].reserveAmmo;
-                    updateWeaponModel();
-                }
-                updateWeaponSlotUI();
-                updateHUD();
-            }
         }
 
         function toggleShop() {
