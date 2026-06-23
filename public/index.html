@@ -5,13 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QULI STRIKE 2 - Browser FPS</title>
     <style>
-        :root {
-            --bg: #0a0a0a;
-            --panel: #141414;
-            --accent: #9c27b0;
-            --gold: #ffd700;
-            --text: #e0e0e0;
-        }
+        :root { --bg: #0a0a0a; --panel: #141414; --accent: #9c27b0; --gold: #ffd700; --text: #e0e0e0; }
         * { margin:0; padding:0; box-sizing:border-box; }
         body { background:#000; font-family:'Segoe UI',Arial,sans-serif; overflow:hidden; user-select:none; width:100vw; height:100vh; color:var(--text); }
         #gameCanvas { position:fixed; top:0; left:0; width:100%; height:100%; z-index:1; cursor:none; }
@@ -241,12 +235,7 @@
         let roundMoney = 10000;
         let shopOpen = false;
         let mouseDown = false;
-        // Слоты оружия
-        let weaponSlots = {
-            1: 'ak47',
-            2: 'usps',
-            3: 'butterfly'
-        };
+        let weaponSlots = { 1: 'ak47', 2: 'usps', 3: 'butterfly' };
         let activeSlot = 1;
 
         const weaponTypes = ['ak47', 'm4a4', 'awp', 'usps', 'knife', 'karambit', 'butterfly'];
@@ -426,7 +415,6 @@
             const skinMat2 = new THREE.MeshStandardMaterial({ color: 0xd2a679, roughness: 0.7 });
             const group = new THREE.Group();
 
-            // Руки
             leftHand = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.07, 0.25, 8), skinMat2);
             leftHand.position.set(0.12, -0.15, 0.1);
             leftHand.rotation.z = -0.3;
@@ -762,7 +750,7 @@
         window.openCasePrompt = function(caseIndex) {
             if (balance < cases[caseIndex].price) { alert('Недостаточно монет!'); return; }
             selectedCase = cases[caseIndex]; const pool = selectedCase.skins; const totalWeight = pool.reduce((s,sk) => s+sk.weight, 0);
-            rouletteItems = []; for (let i=0; i<400; i++) { let r = Math.random()*totalWeight; let picked = pool[0]; for (const sk of pool) { r -= sk.weight; if (r <= 0) { picked = sk; break; } } rouletteItems.push(picked); }
+            rouletteItems = []; for (let i=0; i<200; i++) { let r = Math.random()*totalWeight; let picked = pool[0]; for (const sk of pool) { r -= sk.weight; if (r <= 0) { picked = sk; break; } } rouletteItems.push(picked); }
             rouletteResult = rouletteItems[Math.floor(Math.random()*rouletteItems.length)];
             const displayItems = [...rouletteItems, ...rouletteItems];
             const strip = document.getElementById('rouletteStrip'); strip.innerHTML = displayItems.map(s => `<div class="roulette-item" style="background:${s.color}33;border:2px solid ${s.color};color:${s.color};">${s.name}<br><small>${s.rarity}</small></div>`).join('');
@@ -777,7 +765,7 @@
             const targetOffset = -(targetRawIndex * itemWidth) + (300 - itemWidth/2);
             const startOffset = parseFloat(strip.style.transform.replace('translateX(','').replace('px)','')) || 0;
             const totalScroll = targetOffset - startOffset - (totalItems * 2 * itemWidth);
-            const duration = 2000; // 2 секунды
+            const duration = 4000; // 4 секунды – медленная, читаемая прокрутка
             const startTime = Date.now();
             document.getElementById('rouletteOpenBtn').disabled = true;
             function animate() {
@@ -836,7 +824,6 @@
             document.querySelector(`.weapon-slot-item[data-slot="${activeSlot}"]`)?.classList.add('active');
         }
 
-        // Клавиши
         document.addEventListener('keydown', (e) => {
             keys[e.code] = true;
             if (e.code === 'KeyR' && gameState==='playing') reload();
@@ -890,7 +877,6 @@
             }
         }
 
-        // Магазин оружия
         function toggleShop() {
             if (gameState !== 'playing') return;
             shopOpen = !shopOpen;
