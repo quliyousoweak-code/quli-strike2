@@ -214,7 +214,6 @@
         let mouseSensitivity = 0.5;
         let playerNickname = 'PlayerOne';
         let gameState = 'menu';
-        let currentScreen = 'menuScreen';
         let inventory = [];
         let equippedSkins = {};
         let balance = 500;
@@ -410,19 +409,22 @@
             const darkMetalMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.4, metalness: 0.8 });
             const woodMat = new THREE.MeshStandardMaterial({ color: 0x5c3a1e, roughness: 0.8, metalness: 0.1 });
             const plasticMat = new THREE.MeshStandardMaterial({ color: 0x2a2a2a, roughness: 0.6, metalness: 0.2 });
-            const skinMat2 = new THREE.MeshStandardMaterial({ color: 0xd2a679, roughness: 0.7 });
+            // Простые бежевые руки-палки (майнкрафт стиль)
+            const handMat = new THREE.MeshStandardMaterial({ color: 0xd2a679, roughness: 0.7 });
             const group = new THREE.Group();
 
-            leftHand = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.07, 0.25, 8), skinMat2);
-            leftHand.position.set(0.12, -0.15, 0.1);
-            leftHand.rotation.z = -0.3;
-            leftHand.rotation.x = 0.2;
+            // Левая рука – прямоугольный брусок
+            leftHand = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.25, 0.08), handMat);
+            leftHand.position.set(0.15, -0.12, 0.1);
+            leftHand.rotation.z = -0.2;
+            leftHand.rotation.x = 0.1;
             weaponGroup.add(leftHand);
 
-            rightHand = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.07, 0.25, 8), skinMat2);
-            rightHand.position.set(-0.12, -0.15, 0.1);
-            rightHand.rotation.z = 0.3;
-            rightHand.rotation.x = 0.2;
+            // Правая рука – такой же брусок
+            rightHand = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.25, 0.08), handMat);
+            rightHand.position.set(-0.15, -0.12, 0.1);
+            rightHand.rotation.z = 0.2;
+            rightHand.rotation.x = 0.1;
             weaponGroup.add(rightHand);
 
             if (currentWeapon === 'ak47') {
@@ -695,51 +697,42 @@
             }
         };
 
+        // Скины без ножей
         const baseSkins = [
             { name: 'Basic', weaponType: 'ak47', rarity: 'Consumer', color: '#9e9e9e', weight: 32 },
             { name: 'Matte Black', weaponType: 'm4a4', rarity: 'Consumer', weight: 32 },
             { name: 'Urban Camo', weaponType: 'usps', rarity: 'Consumer', weight: 32 },
             { name: 'Desert Sand', weaponType: 'awp', rarity: 'Consumer', weight: 32 },
-            { name: 'Military Green', weaponType: 'knife', rarity: 'Consumer', weight: 32 },
-            { name: 'Tiger Tooth', weaponType: 'karambit', rarity: 'Covert', color: '#e53935', weight: 0.64 },
-            { name: 'Fade', weaponType: 'butterfly', rarity: 'Classified', color: '#d81b60', weight: 2 },
             { name: 'Standard Issue', weaponType: 'ak47', rarity: 'Industrial', color: '#42a5f5', weight: 30 },
             { name: 'Night Ops', weaponType: 'm4a4', rarity: 'Industrial', weight: 30 },
             { name: 'Rusty', weaponType: 'usps', rarity: 'Industrial', weight: 30 },
             { name: 'Sandstorm', weaponType: 'awp', rarity: 'Industrial', weight: 30 },
-            { name: 'Camo Green', weaponType: 'knife', rarity: 'Industrial', weight: 30 },
             { name: 'Silver Line', weaponType: 'ak47', rarity: 'Mil-Spec', color: '#1e88e5', weight: 25 },
             { name: 'Deep Blue', weaponType: 'm4a4', rarity: 'Mil-Spec', weight: 25 },
             { name: 'Steel Guardian', weaponType: 'usps', rarity: 'Mil-Spec', weight: 25 },
             { name: 'Frost Guardian', weaponType: 'awp', rarity: 'Mil-Spec', weight: 25 },
-            { name: 'Ocean Wave', weaponType: 'knife', rarity: 'Mil-Spec', weight: 25 },
             { name: 'Storm Chaser', weaponType: 'ak47', rarity: 'Restricted', color: '#8e24aa', weight: 10 },
             { name: 'Urban Assault', weaponType: 'm4a4', rarity: 'Restricted', weight: 10 },
             { name: 'Shadow Walker', weaponType: 'usps', rarity: 'Restricted', weight: 10 },
             { name: 'Arctic Wolf', weaponType: 'awp', rarity: 'Restricted', weight: 10 },
-            { name: 'Desert Phantom', weaponType: 'knife', rarity: 'Restricted', weight: 10 },
             { name: 'Neon Rider', weaponType: 'ak47', rarity: 'Classified', color: '#d81b60', weight: 2 },
             { name: 'Cyber Demon', weaponType: 'm4a4', rarity: 'Classified', weight: 2 },
             { name: 'Frostbite', weaponType: 'usps', rarity: 'Classified', weight: 2 },
             { name: 'Phantom Strike', weaponType: 'awp', rarity: 'Classified', weight: 2 },
-            { name: 'Crimson Tide', weaponType: 'knife', rarity: 'Classified', weight: 2 },
             { name: 'Blood Moon', weaponType: 'ak47', rarity: 'Covert', color: '#e53935', weight: 0.64 },
             { name: 'Inferno Core', weaponType: 'm4a4', rarity: 'Covert', weight: 0.64 },
             { name: 'Dark Knight', weaponType: 'usps', rarity: 'Covert', weight: 0.64 },
             { name: 'Nightmare', weaponType: 'awp', rarity: 'Covert', weight: 0.64 },
-            { name: 'Venomous', weaponType: 'knife', rarity: 'Covert', weight: 0.64 },
             { name: "Dragon's Breath", weaponType: 'ak47', rarity: 'Gold', color: '#ffd700', weight: 0.26 },
             { name: 'Nether Lord', weaponType: 'm4a4', rarity: 'Gold', weight: 0.26 },
             { name: 'Royal Crimson', weaponType: 'awp', rarity: 'Gold', weight: 0.26 },
             { name: 'God of War', weaponType: 'usps', rarity: 'Gold', weight: 0.26 },
-            { name: 'Phoenix Rising', weaponType: 'knife', rarity: 'Gold', weight: 0.26 },
         ];
 
         const legendaryExtraSkins = [
             { name: 'Mythical Beast', weaponType: 'ak47', rarity: 'Gold', color: '#ffd700', weight: 0.15 },
             { name: 'Eternal Flame', weaponType: 'awp', rarity: 'Gold', color: '#ffd700', weight: 0.15 },
             { name: 'Divine Light', weaponType: 'm4a4', rarity: 'Covert', color: '#e53935', weight: 0.4 },
-            { name: 'Shadow Fury', weaponType: 'karambit', rarity: 'Covert', color: '#e53935', weight: 0.5 },
         ];
 
         const emeraldSkins = baseSkins;
@@ -889,54 +882,36 @@
             if (balance < cases[caseIndex].price) { alert('Недостаточно монет!'); return; }
             selectedCase = cases[caseIndex]; const pool = selectedCase.skins; const totalWeight = pool.reduce((s,sk) => s+sk.weight, 0);
             rouletteItems = []; for (let i=0; i<1000; i++) { let r = Math.random()*totalWeight; let picked = pool[0]; for (const sk of pool) { r -= sk.weight; if (r <= 0) { picked = sk; break; } } rouletteItems.push(picked); }
-            // Выбираем случайный скин, который будет выпадать
             rouletteResult = rouletteItems[Math.floor(Math.random()*rouletteItems.length)];
-            // Создаём 4 копии для долгой прокрутки
             const displayItems = [...rouletteItems, ...rouletteItems, ...rouletteItems, ...rouletteItems];
-            const strip = document.getElementById('rouletteStrip');
-            strip.innerHTML = displayItems.map(s => `<div class="roulette-item" style="background:${s.color}33;border:2px solid ${s.color};color:${s.color};">${s.name}<br><small>${s.rarity}</small></div>`).join('');
-            strip.style.transform = 'translateX(0px)';
-            document.getElementById('rouletteOverlay').classList.add('active');
-            rouletteActive = false;
+            const strip = document.getElementById('rouletteStrip'); strip.innerHTML = displayItems.map(s => `<div class="roulette-item" style="background:${s.color}33;border:2px solid ${s.color};color:${s.color};">${s.name}<br><small>${s.rarity}</small></div>`).join('');
+            strip.style.transform = 'translateX(0px)'; document.getElementById('rouletteOverlay').classList.add('active'); rouletteActive = false;
         };
 
         window.startRoulette = function() {
             if (rouletteActive) return; if (!selectedCase || balance < selectedCase.price) return;
             balance -= selectedCase.price; saveProgress(); updateProfileUI(); rouletteActive = true;
-            const strip = document.getElementById('rouletteStrip');
-            const itemWidth = 90 + 4; // min-width + gap
-            const totalItems = rouletteItems.length; // 1000
-            // Находим индекс выпадающего скина в первом наборе
+            const strip = document.getElementById('rouletteStrip'); const itemWidth = 90 + 4;
+            const totalItems = rouletteItems.length;
             const targetIndex = rouletteItems.indexOf(rouletteResult);
-            // Указатель будет указывать на второй набор (totalItems + targetIndex)
             const targetRawIndex = totalItems + targetIndex;
-            // Вычисляем смещение, чтобы центр элемента оказался под указателем (300px)
             const targetOffset = -(targetRawIndex * itemWidth) + (600/2 - itemWidth/2);
             const startOffset = parseFloat(strip.style.transform.replace('translateX(','').replace('px)','')) || 0;
-            // Прокручиваем на 3 полных цикла (4 копии минус один)
             const totalScroll = targetOffset - startOffset - (totalItems * 3 * itemWidth);
             const duration = 2000;
             const startTime = Date.now();
             document.getElementById('rouletteOpenBtn').disabled = true;
-
             function animate() {
-                const elapsed = Date.now()-startTime;
-                const progress = Math.min(elapsed/duration, 1);
+                const elapsed = Date.now()-startTime; const progress = Math.min(elapsed/duration, 1);
                 const eased = 1 - Math.pow(1 - progress, 6);
                 strip.style.transform = `translateX(${startOffset + totalScroll * eased}px)`;
-                if (progress < 1) {
-                    requestAnimationFrame(animate);
-                } else {
-                    // Финальная точная остановка и подсветка выигрышного элемента
+                if (progress < 1) requestAnimationFrame(animate);
+                else {
                     strip.style.transform = `translateX(${targetOffset}px)`;
-                    // Подсвечиваем элемент под указателем
                     document.querySelectorAll('.roulette-item').forEach(el => el.classList.remove('win'));
                     const items = document.querySelectorAll('.roulette-item');
-                    if (items[targetRawIndex]) {
-                        items[targetRawIndex].classList.add('win');
-                    }
-                    rouletteActive = false;
-                    document.getElementById('rouletteOpenBtn').disabled = false;
+                    if (items[targetRawIndex]) items[targetRawIndex].classList.add('win');
+                    rouletteActive = false; document.getElementById('rouletteOpenBtn').disabled = false;
                     showWinPopup(rouletteResult);
                 }
             }
@@ -948,11 +923,18 @@
             document.getElementById('winItemName').textContent = skin.name+' ('+weaponDefaults[skin.weaponType].name+')';
             document.getElementById('winItemRarity').textContent = skin.rarity;
             document.getElementById('winItemRarity').style.color = skin.color;
+            // Для редких скинов делаем рамку поярче
+            if (['Restricted','Classified','Covert','Gold'].includes(skin.rarity)) {
+                popup.style.borderColor = skin.color;
+                popup.style.boxShadow = `0 0 60px ${skin.color}`;
+            } else {
+                popup.style.borderColor = '#ffd700';
+                popup.style.boxShadow = '0 0 60px rgba(255,215,0,0.5)';
+            }
             popup.classList.add('show');
             const newSkin = { ...skin, id: Date.now()+Math.random(), priceMultiplier: getPriceMultiplier(selectedCase.price) };
             inventory.push(newSkin); saveProgress(); updateProfileUI(); renderInventory();
         }
-
         window.closeWinPopup = function() { document.getElementById('winPopup').classList.remove('show'); document.getElementById('rouletteOverlay').classList.remove('active'); selectedCase = null; rouletteItems = []; rouletteResult = null; };
         function closeRoulette() { if (rouletteActive) return; document.getElementById('rouletteOverlay').classList.remove('active'); document.getElementById('winPopup').classList.remove('show'); selectedCase = null; }
         window.closeRoulette = closeRoulette;
