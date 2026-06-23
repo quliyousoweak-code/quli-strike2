@@ -48,7 +48,6 @@
         .case-card .case-view { width:160px; height:160px; border-radius:8px; overflow:hidden; }
         .case-card .case-name { font-weight:700; color:#fff; font-size:14px; }
         .case-card .case-price { color:#ffd700; font-weight:600; }
-        .case-open-btn { padding:8px 20px; font-size:12px; margin-top:4px; }
         #rouletteOverlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.65); backdrop-filter:blur(6px); z-index:100; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px; pointer-events:none; opacity:0; transition:opacity 0.3s; }
         #rouletteOverlay.active { opacity:1; pointer-events:all; }
         #rouletteStrip { display:flex; gap:4px; will-change:transform; }
@@ -209,7 +208,6 @@
     <script type="module">
         import * as THREE from 'three';
 
-        // Глобальные переменные
         let mouseSensitivity = 0.5;
         let playerNickname = 'PlayerOne';
         let gameState = 'menu';
@@ -740,7 +738,6 @@
             { name: 'Elite Case', price: 777, color: '#ffd700', skins: allSkins.filter(s => ['Restricted','Classified','Covert','Gold'].includes(s.rarity)) },
         ];
 
-        // 3D-модели кейсов
         const caseScenes = {};
         function createCaseModel(caseData, container) {
             const w = container.clientWidth || 160;
@@ -760,7 +757,6 @@
             scene.add(light);
             scene.add(new THREE.AmbientLight(0x404040, 1.0));
 
-            // Кейс
             const group = new THREE.Group();
             const bodyMat = new THREE.MeshStandardMaterial({ color: caseData.color, roughness: 0.4, metalness: 0.7 });
             const accentMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.3, metalness: 0.9 });
@@ -769,7 +765,6 @@
             const body = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.6, 0.4), bodyMat);
             group.add(body);
 
-            // Усиленные углы
             const cornerGeo = new THREE.BoxGeometry(0.15, 0.15, 0.1);
             const corners = [
                 [0.375, 0.225, 0.15], [0.375, -0.225, 0.15], [-0.375, 0.225, 0.15], [-0.375, -0.225, 0.15],
@@ -781,7 +776,6 @@
                 group.add(corner);
             });
 
-            // Замок
             const lock = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.1, 0.08), accentMat);
             lock.position.set(0, -0.25, 0.22);
             group.add(lock);
@@ -790,7 +784,6 @@
             keyhole.position.set(0, -0.25, 0.26);
             group.add(keyhole);
 
-            // Ручки
             const handleGeo = new THREE.TorusGeometry(0.06, 0.02, 8, 16);
             const handle1 = new THREE.Mesh(handleGeo, accentMat);
             handle1.position.set(0.5, 0, 0.15);
@@ -801,7 +794,6 @@
             handle2.rotation.y = Math.PI/2;
             group.add(handle2);
 
-            // Жёлтые полосы опасности
             const stripeGeo = new THREE.BoxGeometry(0.05, 0.6, 0.41);
             const stripe1 = new THREE.Mesh(stripeGeo, hazardMat);
             stripe1.position.set(0.15, 0, 0);
@@ -810,7 +802,6 @@
             stripe2.position.set(-0.15, 0, 0);
             group.add(stripe2);
 
-            // Логотип (плоская наклейка)
             const logoCanvas = document.createElement('canvas');
             logoCanvas.width = 128; logoCanvas.height = 64;
             const ctx = logoCanvas.getContext('2d');
@@ -831,7 +822,6 @@
         function renderCases() {
             const grid = document.getElementById('casesGrid');
             grid.innerHTML = '';
-            // Удаляем старые 3D-рендереры
             for (const key in caseScenes) {
                 if (caseScenes[key]) {
                     caseScenes[key].renderer3d.dispose();
@@ -840,7 +830,6 @@
                     }
                 }
             }
-            // Создаём карточки с 3D-кейсами
             cases.forEach((c, i) => {
                 const card = document.createElement('div');
                 card.className = 'case-card';
@@ -849,23 +838,18 @@
                     <div class="case-view" id="caseView${i}" style="width:160px;height:160px;"></div>
                     <div class="case-name">${c.name}</div>
                     <div class="case-price">💰 ${c.price} монет</div>
-                    <button class="btn gold case-open-btn" id="openCaseBtn${i}">Открыть</button>
                 `;
-                grid.appendChild(card);
-
-                // Вешаем обработчик открытия кейса
-                card.querySelector(`#openCaseBtn${i}`).addEventListener('click', (e) => {
-                    e.stopPropagation();
+                // Открытие кейса по клику на всю карточку
+                card.addEventListener('click', () => {
                     window.openCasePrompt(i);
                 });
+                grid.appendChild(card);
 
-                // 3D-сцена для кейса
                 setTimeout(() => {
                     const container = document.getElementById(`caseView${i}`);
                     if (container && !caseScenes[i]) {
                         const caseScene = createCaseModel(c, container);
                         caseScenes[i] = caseScene;
-                        // Анимация вращения
                         function animateCase() {
                             if (!caseScenes[i]) return;
                             caseScene.group.rotation.y += 0.005;
@@ -878,7 +862,6 @@
             });
         }
 
-        // Прокрутка и рулетка остаются без изменений
         window.openCasePrompt = function(caseIndex) {
             if (balance < cases[caseIndex].price) { alert('Недостаточно монет!'); return; }
             selectedCase = cases[caseIndex]; const pool = selectedCase.skins; const totalWeight = pool.reduce((s,sk) => s+sk.weight, 0);
