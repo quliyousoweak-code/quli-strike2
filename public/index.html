@@ -55,6 +55,7 @@
         #rouletteWindow { width:600px; height:100px; overflow:hidden; border:3px solid #9c27b0; border-radius:8px; position:relative; background:#111; }
         #roulettePointer { position:absolute; top:0; bottom:0; left:50%; width:3px; background:#ffd700; z-index:5; box-shadow:0 0 20px #ffd700; transform:translateX(-50%); }
         .roulette-item { min-width:90px; height:100px; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:10px; text-align:center; color:#fff; border-radius:4px; flex-shrink:0; }
+        .roulette-item.win { border-color: #ffffff !important; box-shadow: 0 0 20px rgba(255,255,255,0.9); transform: scale(1.05); transition: 0.2s; }
         #winPopup { position:fixed; top:50%; left:50%; transform:translate(-50%, -50%) scale(0); background:#1a1a1a; border:3px solid #ffd700; border-radius:20px; padding:30px; z-index:110; text-align:center; transition:transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow:0 0 60px rgba(255,215,0,0.5); }
         #winPopup.show { transform:translate(-50%, -50%) scale(1); }
         #hudOverlay { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); display:flex; gap:20px; align-items:flex-end; z-index:15; pointer-events:none; }
@@ -653,7 +654,6 @@
         function resetProgress() { if (confirm('Сбросить весь прогресс?')) { localStorage.clear(); inventory = []; equippedSkins = {}; balance = 500; playerKills = 0; playerDeaths = 0; playerNickname = 'PlayerOne'; saveProgress(); updateProfileUI(); updateWeaponModel(); renderInventory(); document.getElementById('nicknameInput').value = playerNickname; alert('Прогресс сброшен.'); } }
         window.resetProgress = resetProgress;
 
-        // ---------- ИНВЕНТАРЬ С УЧЁТОМ МНОЖИТЕЛЯ ЦЕНЫ ----------
         function renderInventory() {
             const grid = document.getElementById('inventoryGrid');
             if (inventory.length === 0) { grid.innerHTML = '<p style="color:#888;width:100%;text-align:center;">Инвентарь пуст.</p>'; return; }
@@ -695,7 +695,6 @@
             }
         };
 
-        // ---------- СКИНЫ ДЛЯ КЕЙСОВ ----------
         const baseSkins = [
             { name: 'Basic', weaponType: 'ak47', rarity: 'Consumer', color: '#9e9e9e', weight: 32 },
             { name: 'Matte Black', weaponType: 'm4a4', rarity: 'Consumer', weight: 32 },
@@ -890,33 +889,54 @@
             if (balance < cases[caseIndex].price) { alert('Недостаточно монет!'); return; }
             selectedCase = cases[caseIndex]; const pool = selectedCase.skins; const totalWeight = pool.reduce((s,sk) => s+sk.weight, 0);
             rouletteItems = []; for (let i=0; i<1000; i++) { let r = Math.random()*totalWeight; let picked = pool[0]; for (const sk of pool) { r -= sk.weight; if (r <= 0) { picked = sk; break; } } rouletteItems.push(picked); }
+            // Выбираем случайный скин, который будет выпадать
             rouletteResult = rouletteItems[Math.floor(Math.random()*rouletteItems.length)];
+            // Создаём 4 копии для долгой прокрутки
             const displayItems = [...rouletteItems, ...rouletteItems, ...rouletteItems, ...rouletteItems];
-            const strip = document.getElementById('rouletteStrip'); strip.innerHTML = displayItems.map(s => `<div class="roulette-item" style="background:${s.color}33;border:2px solid ${s.color};color:${s.color};">${s.name}<br><small>${s.rarity}</small></div>`).join('');
-            strip.style.transform = 'translateX(0px)'; document.getElementById('rouletteOverlay').classList.add('active'); rouletteActive = false;
+            const strip = document.getElementById('rouletteStrip');
+            strip.innerHTML = displayItems.map(s => `<div class="roulette-item" style="background:${s.color}33;border:2px solid ${s.color};color:${s.color};">${s.name}<br><small>${s.rarity}</small></div>`).join('');
+            strip.style.transform = 'translateX(0px)';
+            document.getElementById('rouletteOverlay').classList.add('active');
+            rouletteActive = false;
         };
 
         window.startRoulette = function() {
             if (rouletteActive) return; if (!selectedCase || balance < selectedCase.price) return;
             balance -= selectedCase.price; saveProgress(); updateProfileUI(); rouletteActive = true;
-            const strip = document.getElementById('rouletteStrip'); const itemWidth = 90 + 4;
-            const totalItems = rouletteItems.length;
+            const strip = document.getElementById('rouletteStrip');
+            const itemWidth = 90 + 4; // min-width + gap
+            const totalItems = rouletteItems.length; // 1000
+            // Находим индекс выпадающего скина в первом наборе
             const targetIndex = rouletteItems.indexOf(rouletteResult);
+            // Указатель будет указывать на второй набор (totalItems + targetIndex)
             const targetRawIndex = totalItems + targetIndex;
+            // Вычисляем смещение, чтобы центр элемента оказался под указателем (300px)
             const targetOffset = -(targetRawIndex * itemWidth) + (600/2 - itemWidth/2);
             const startOffset = parseFloat(strip.style.transform.replace('translateX(','').replace('px)','')) || 0;
+            // Прокручиваем на 3 полных цикла (4 копии минус один)
             const totalScroll = targetOffset - startOffset - (totalItems * 3 * itemWidth);
             const duration = 2000;
             const startTime = Date.now();
             document.getElementById('rouletteOpenBtn').disabled = true;
+
             function animate() {
-                const elapsed = Date.now()-startTime; const progress = Math.min(elapsed/duration, 1);
+                const elapsed = Date.now()-startTime;
+                const progress = Math.min(elapsed/duration, 1);
                 const eased = 1 - Math.pow(1 - progress, 6);
                 strip.style.transform = `translateX(${startOffset + totalScroll * eased}px)`;
-                if (progress < 1) requestAnimationFrame(animate);
-                else {
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    // Финальная точная остановка и подсветка выигрышного элемента
                     strip.style.transform = `translateX(${targetOffset}px)`;
-                    rouletteActive = false; document.getElementById('rouletteOpenBtn').disabled = false;
+                    // Подсвечиваем элемент под указателем
+                    document.querySelectorAll('.roulette-item').forEach(el => el.classList.remove('win'));
+                    const items = document.querySelectorAll('.roulette-item');
+                    if (items[targetRawIndex]) {
+                        items[targetRawIndex].classList.add('win');
+                    }
+                    rouletteActive = false;
+                    document.getElementById('rouletteOpenBtn').disabled = false;
                     showWinPopup(rouletteResult);
                 }
             }
@@ -924,10 +944,15 @@
         };
 
         function showWinPopup(skin) {
-            const popup = document.getElementById('winPopup'); document.getElementById('winItemName').textContent = skin.name+' ('+weaponDefaults[skin.weaponType].name+')'; document.getElementById('winItemRarity').textContent = skin.rarity; document.getElementById('winItemRarity').style.color = skin.color; popup.classList.add('show');
+            const popup = document.getElementById('winPopup');
+            document.getElementById('winItemName').textContent = skin.name+' ('+weaponDefaults[skin.weaponType].name+')';
+            document.getElementById('winItemRarity').textContent = skin.rarity;
+            document.getElementById('winItemRarity').style.color = skin.color;
+            popup.classList.add('show');
             const newSkin = { ...skin, id: Date.now()+Math.random(), priceMultiplier: getPriceMultiplier(selectedCase.price) };
             inventory.push(newSkin); saveProgress(); updateProfileUI(); renderInventory();
         }
+
         window.closeWinPopup = function() { document.getElementById('winPopup').classList.remove('show'); document.getElementById('rouletteOverlay').classList.remove('active'); selectedCase = null; rouletteItems = []; rouletteResult = null; };
         function closeRoulette() { if (rouletteActive) return; document.getElementById('rouletteOverlay').classList.remove('active'); document.getElementById('winPopup').classList.remove('show'); selectedCase = null; }
         window.closeRoulette = closeRoulette;
@@ -935,7 +960,6 @@
         function saveProgress() { localStorage.setItem('quliStrike2_save', JSON.stringify({ inventory, equippedSkins, balance, playerKills, playerDeaths, playerNickname })); }
         function loadProgress() {
             const raw = localStorage.getItem('quliStrike2_save'); if (raw) { try { const data = JSON.parse(raw); inventory = data.inventory||[]; equippedSkins = data.equippedSkins||{}; balance = data.balance||500; playerKills = data.playerKills||0; playerDeaths = data.playerDeaths||0; playerNickname = data.playerNickname||'PlayerOne'; } catch(e){} }
-            // Для старых скинов без множителя
             inventory.forEach(s => { if (s.priceMultiplier === undefined) s.priceMultiplier = 1; });
             updateProfileUI(); updateWeaponModel();
         }
