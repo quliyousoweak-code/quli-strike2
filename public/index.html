@@ -653,14 +653,15 @@
         function resetProgress() { if (confirm('Сбросить весь прогресс?')) { localStorage.clear(); inventory = []; equippedSkins = {}; balance = 500; playerKills = 0; playerDeaths = 0; playerNickname = 'PlayerOne'; saveProgress(); updateProfileUI(); updateWeaponModel(); renderInventory(); document.getElementById('nicknameInput').value = playerNickname; alert('Прогресс сброшен.'); } }
         window.resetProgress = resetProgress;
 
+        // ---------- ИНВЕНТАРЬ С УЧЁТОМ МНОЖИТЕЛЯ ЦЕНЫ ----------
         function renderInventory() {
             const grid = document.getElementById('inventoryGrid');
             if (inventory.length === 0) { grid.innerHTML = '<p style="color:#888;width:100%;text-align:center;">Инвентарь пуст.</p>'; return; }
             grid.innerHTML = inventory.map((skin, idx) => {
                 const rc = {'Consumer':'#9e9e9e','Industrial':'#42a5f5','Mil-Spec':'#1e88e5','Restricted':'#8e24aa','Classified':'#d81b60','Covert':'#e53935','Gold':'#ffd700'}[skin.rarity] || '#888';
                 const isEq = equippedSkins[skin.weaponType] && equippedSkins[skin.weaponType].id === skin.id;
-                const sellPrices = {'Consumer':10, 'Industrial':20, 'Mil-Spec':50, 'Restricted':150, 'Classified':500, 'Covert':1500, 'Gold':5000};
-                const price = sellPrices[skin.rarity] || 5;
+                const basePrice = {'Consumer':10, 'Industrial':20, 'Mil-Spec':50, 'Restricted':150, 'Classified':500, 'Covert':1500, 'Gold':5000}[skin.rarity] || 5;
+                const price = Math.floor(basePrice * (skin.priceMultiplier || 1));
                 const bgColor = rc + '22';
                 return `<div class="skin-card${isEq?' equipped':''}" style="border-color:${rc}; background: linear-gradient(135deg, ${bgColor}, #1a1a1a);">
                     <div class="rarity-strip" style="background:${rc};"></div>
@@ -678,8 +679,8 @@
         window.sellSkin = function(idx) {
             const skin = inventory[idx];
             if (!skin) return;
-            const sellPrices = {'Consumer':10, 'Industrial':20, 'Mil-Spec':50, 'Restricted':150, 'Classified':500, 'Covert':1500, 'Gold':5000};
-            const price = sellPrices[skin.rarity] || 5;
+            const basePrice = {'Consumer':10, 'Industrial':20, 'Mil-Spec':50, 'Restricted':150, 'Classified':500, 'Covert':1500, 'Gold':5000}[skin.rarity] || 5;
+            const price = Math.floor(basePrice * (skin.priceMultiplier || 1));
             if (confirm(`Продать "${skin.name}" за ${price} монет?`)) {
                 inventory.splice(idx, 1);
                 balance += price;
@@ -694,7 +695,8 @@
             }
         };
 
-        const allSkins = [
+        // ---------- СКИНЫ ДЛЯ КЕЙСОВ ----------
+        const baseSkins = [
             { name: 'Basic', weaponType: 'ak47', rarity: 'Consumer', color: '#9e9e9e', weight: 32 },
             { name: 'Matte Black', weaponType: 'm4a4', rarity: 'Consumer', weight: 32 },
             { name: 'Urban Camo', weaponType: 'usps', rarity: 'Consumer', weight: 32 },
@@ -734,11 +736,31 @@
             { name: 'Phoenix Rising', weaponType: 'knife', rarity: 'Gold', weight: 0.26 },
         ];
 
-        const cases = [
-            { name: 'Emerald Case', price: 3333, color: '#00c853', skins: allSkins },
-            { name: 'Neon Case', price: 1999, color: '#ff4081', skins: allSkins },
-            { name: 'Elite Case', price: 777, color: '#ffd700', skins: allSkins.filter(s => ['Restricted','Classified','Covert','Gold'].includes(s.rarity)) },
+        const legendaryExtraSkins = [
+            { name: 'Mythical Beast', weaponType: 'ak47', rarity: 'Gold', color: '#ffd700', weight: 0.15 },
+            { name: 'Eternal Flame', weaponType: 'awp', rarity: 'Gold', color: '#ffd700', weight: 0.15 },
+            { name: 'Divine Light', weaponType: 'm4a4', rarity: 'Covert', color: '#e53935', weight: 0.4 },
+            { name: 'Shadow Fury', weaponType: 'karambit', rarity: 'Covert', color: '#e53935', weight: 0.5 },
         ];
+
+        const emeraldSkins = baseSkins;
+        const neonSkins = baseSkins.filter(s => !['Gold','Covert'].includes(s.rarity));
+        const eliteSkins = baseSkins.filter(s => ['Restricted','Classified','Covert','Gold'].includes(s.rarity));
+        const legendarySkins = [...baseSkins.filter(s => ['Classified','Covert','Gold'].includes(s.rarity)), ...legendaryExtraSkins];
+
+        const cases = [
+            { name: 'Emerald Case', price: 3333, color: '#00c853', skins: emeraldSkins },
+            { name: 'Neon Case', price: 1111, color: '#ff4081', skins: neonSkins },
+            { name: 'Elite Case', price: 777, color: '#ffd700', skins: eliteSkins },
+            { name: 'Legendary Case', price: 11111, color: '#e040fb', skins: legendarySkins },
+        ];
+
+        function getPriceMultiplier(casePrice) {
+            if (casePrice >= 11111) return 2.0;
+            if (casePrice >= 3333) return 1.0;
+            if (casePrice >= 1111) return 0.7;
+            return 0.5;
+        }
 
         const caseScenes = {};
         function createCaseModel(caseData, container) {
@@ -869,7 +891,7 @@
             selectedCase = cases[caseIndex]; const pool = selectedCase.skins; const totalWeight = pool.reduce((s,sk) => s+sk.weight, 0);
             rouletteItems = []; for (let i=0; i<1000; i++) { let r = Math.random()*totalWeight; let picked = pool[0]; for (const sk of pool) { r -= sk.weight; if (r <= 0) { picked = sk; break; } } rouletteItems.push(picked); }
             rouletteResult = rouletteItems[Math.floor(Math.random()*rouletteItems.length)];
-            const displayItems = [...rouletteItems, ...rouletteItems, ...rouletteItems, ...rouletteItems]; // 4 копии
+            const displayItems = [...rouletteItems, ...rouletteItems, ...rouletteItems, ...rouletteItems];
             const strip = document.getElementById('rouletteStrip'); strip.innerHTML = displayItems.map(s => `<div class="roulette-item" style="background:${s.color}33;border:2px solid ${s.color};color:${s.color};">${s.name}<br><small>${s.rarity}</small></div>`).join('');
             strip.style.transform = 'translateX(0px)'; document.getElementById('rouletteOverlay').classList.add('active'); rouletteActive = false;
         };
@@ -877,13 +899,12 @@
         window.startRoulette = function() {
             if (rouletteActive) return; if (!selectedCase || balance < selectedCase.price) return;
             balance -= selectedCase.price; saveProgress(); updateProfileUI(); rouletteActive = true;
-            const strip = document.getElementById('rouletteStrip'); const itemWidth = 90 + 4; // min-width + gap
-            const totalItems = rouletteItems.length; // 1000
+            const strip = document.getElementById('rouletteStrip'); const itemWidth = 90 + 4;
+            const totalItems = rouletteItems.length;
             const targetIndex = rouletteItems.indexOf(rouletteResult);
-            const targetRawIndex = totalItems + targetIndex; // вторая копия
+            const targetRawIndex = totalItems + targetIndex;
             const targetOffset = -(targetRawIndex * itemWidth) + (600/2 - itemWidth/2);
             const startOffset = parseFloat(strip.style.transform.replace('translateX(','').replace('px)','')) || 0;
-            // Прокручиваем на 3 полных цикла (4 копии минус один)
             const totalScroll = targetOffset - startOffset - (totalItems * 3 * itemWidth);
             const duration = 2000;
             const startTime = Date.now();
@@ -904,7 +925,8 @@
 
         function showWinPopup(skin) {
             const popup = document.getElementById('winPopup'); document.getElementById('winItemName').textContent = skin.name+' ('+weaponDefaults[skin.weaponType].name+')'; document.getElementById('winItemRarity').textContent = skin.rarity; document.getElementById('winItemRarity').style.color = skin.color; popup.classList.add('show');
-            inventory.push({ ...skin, id: Date.now()+Math.random() }); saveProgress(); updateProfileUI(); renderInventory();
+            const newSkin = { ...skin, id: Date.now()+Math.random(), priceMultiplier: getPriceMultiplier(selectedCase.price) };
+            inventory.push(newSkin); saveProgress(); updateProfileUI(); renderInventory();
         }
         window.closeWinPopup = function() { document.getElementById('winPopup').classList.remove('show'); document.getElementById('rouletteOverlay').classList.remove('active'); selectedCase = null; rouletteItems = []; rouletteResult = null; };
         function closeRoulette() { if (rouletteActive) return; document.getElementById('rouletteOverlay').classList.remove('active'); document.getElementById('winPopup').classList.remove('show'); selectedCase = null; }
@@ -913,6 +935,8 @@
         function saveProgress() { localStorage.setItem('quliStrike2_save', JSON.stringify({ inventory, equippedSkins, balance, playerKills, playerDeaths, playerNickname })); }
         function loadProgress() {
             const raw = localStorage.getItem('quliStrike2_save'); if (raw) { try { const data = JSON.parse(raw); inventory = data.inventory||[]; equippedSkins = data.equippedSkins||{}; balance = data.balance||500; playerKills = data.playerKills||0; playerDeaths = data.playerDeaths||0; playerNickname = data.playerNickname||'PlayerOne'; } catch(e){} }
+            // Для старых скинов без множителя
+            inventory.forEach(s => { if (s.priceMultiplier === undefined) s.priceMultiplier = 1; });
             updateProfileUI(); updateWeaponModel();
         }
         loadProgress();
