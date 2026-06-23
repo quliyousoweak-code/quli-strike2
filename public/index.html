@@ -177,7 +177,6 @@
         <p id="winItemRarity" style="font-size:14px;"></p>
         <button class="btn gold" onclick="closeWinPopup()">Забрать</button>
     </div>
-    <!-- HUD исправлен: броня, здоровье, патроны -->
     <div id="hudOverlay" style="display:none;">
         <div class="hud-panel">🛡️ Броня<div class="val" id="hudArmor">50</div></div>
         <div class="hud-panel">❤️ Здоровье<div class="val" id="hudHP">100</div></div>
@@ -396,15 +395,11 @@
             const gloveTex = createGloveTexture(baseColor, '#1a1a1a');
             const gloveMat = new THREE.MeshStandardMaterial({ map: gloveTex, roughness: 0.6, metalness: 0.3 });
             const darkMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.4, metalness: 0.8 });
-
             const palm = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.14, 0.08), gloveMat);
             palm.position.set(0, 0.04, 0); group.add(palm);
-
             const fingers = [
-                { x: 0.05, y: 0.15, len: 0.12 },
-                { x: 0.01, y: 0.16, len: 0.13 },
-                { x: -0.03, y: 0.14, len: 0.11 },
-                { x: -0.07, y: 0.11, len: 0.09 },
+                { x: 0.05, y: 0.15, len: 0.12 }, { x: 0.01, y: 0.16, len: 0.13 },
+                { x: -0.03, y: 0.14, len: 0.11 }, { x: -0.07, y: 0.11, len: 0.09 }
             ];
             fingers.forEach(f => {
                 const finger = new THREE.Mesh(new THREE.BoxGeometry(0.035, f.len, 0.035), gloveMat);
@@ -415,7 +410,6 @@
             thumb.position.set(side === 'left' ? 0.09 : -0.09, 0.1, -0.02);
             thumb.rotation.z = side === 'left' ? -0.4 : 0.4;
             group.add(thumb);
-
             const wristGuard = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.1, 0.11), darkMat);
             wristGuard.position.set(0, -0.1, 0); group.add(wristGuard);
             const cuff = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.06, 0.13), darkMat);
@@ -463,7 +457,6 @@
             return new THREE.CanvasTexture(c);
         }
 
-        // Генерация иконки для инвентаря
         function createItemPreview(item) {
             const c = document.createElement('canvas');
             c.width = 160; c.height = 110;
@@ -499,21 +492,16 @@
             if (weaponModel) weaponGroup.remove(weaponModel);
             if (leftHand) weaponGroup.remove(leftHand);
             if (rightHand) weaponGroup.remove(rightHand);
-
             leftHand = createGloveHand('left', equippedGloves);
             rightHand = createGloveHand('right', equippedGloves);
-            weaponGroup.add(leftHand);
-            weaponGroup.add(rightHand);
-
+            weaponGroup.add(leftHand); weaponGroup.add(rightHand);
             const skinMat = getSkinMaterial(currentWeapon);
             const darkMetalMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.4, metalness: 0.8 });
             const woodMat = new THREE.MeshStandardMaterial({ color: 0x5c3a1e, roughness: 0.8, metalness: 0.1 });
             const plasticMat = new THREE.MeshStandardMaterial({ color: 0x2a2a2a, roughness: 0.6, metalness: 0.2 });
             const group = new THREE.Group();
-
             let leftHandPos = new THREE.Vector3(0.15, -0.05, -0.15);
             let rightHandPos = new THREE.Vector3(-0.15, -0.05, 0.1);
-
             if (currentWeapon === 'ak47') {
                 const receiver = new THREE.Mesh(new THREE.BoxGeometry(0.07,0.1,0.35), skinMat); receiver.position.set(0,0.05,-0.1); group.add(receiver);
                 const handguard = new THREE.Mesh(new THREE.BoxGeometry(0.07,0.06,0.18), woodMat); handguard.position.set(0,0.02,-0.28); group.add(handguard);
@@ -524,8 +512,7 @@
                 const gasTube = new THREE.Mesh(new THREE.CylinderGeometry(0.01,0.01,0.25,6), darkMetalMat); gasTube.rotation.x=Math.PI/2; gasTube.position.set(0,0.11,-0.35); group.add(gasTube);
                 const frontSight = new THREE.Mesh(new THREE.BoxGeometry(0.02,0.04,0.02), darkMetalMat); frontSight.position.set(0,0.13,-0.52); group.add(frontSight);
                 const rearSight = new THREE.Mesh(new THREE.BoxGeometry(0.02,0.03,0.02), darkMetalMat); rearSight.position.set(0,0.12,-0.15); group.add(rearSight);
-                leftHandPos.set(0.18, -0.15, -0.35);
-                rightHandPos.set(-0.18, -0.2, 0.05);
+                leftHandPos.set(0.18, -0.15, -0.35); rightHandPos.set(-0.18, -0.2, 0.05);
             } else if (currentWeapon === 'm4a4') {
                 const receiver = new THREE.Mesh(new THREE.BoxGeometry(0.07,0.1,0.35), skinMat); receiver.position.set(0,0.05,-0.1); group.add(receiver);
                 const handguard = new THREE.Mesh(new THREE.BoxGeometry(0.06,0.06,0.2), darkMetalMat); handguard.position.set(0,0.02,-0.28); group.add(handguard);
@@ -536,8 +523,7 @@
                 const rail = new THREE.Mesh(new THREE.BoxGeometry(0.04,0.01,0.2), new THREE.MeshStandardMaterial({color:0x555555,roughness:0.3,metalness:0.9})); rail.position.set(0,0.13,-0.18); group.add(rail);
                 const frontSight = new THREE.Mesh(new THREE.BoxGeometry(0.02,0.04,0.02), darkMetalMat); frontSight.position.set(0,0.12,-0.45); group.add(frontSight);
                 const rearSight = new THREE.Mesh(new THREE.BoxGeometry(0.02,0.03,0.02), darkMetalMat); rearSight.position.set(0,0.12,-0.15); group.add(rearSight);
-                leftHandPos.set(0.17, -0.15, -0.32);
-                rightHandPos.set(-0.17, -0.2, 0.05);
+                leftHandPos.set(0.17, -0.15, -0.32); rightHandPos.set(-0.17, -0.2, 0.05);
             } else if (currentWeapon === 'awp') {
                 const body = new THREE.Mesh(new THREE.BoxGeometry(0.07,0.11,0.6), skinMat); body.position.set(0,0.05,-0.2); group.add(body);
                 const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.018,0.022,0.7,8), darkMetalMat); barrel.rotation.x=Math.PI/2; barrel.position.set(0,0.08,-0.6); group.add(barrel);
@@ -546,46 +532,37 @@
                 const mag = new THREE.Mesh(new THREE.BoxGeometry(0.04,0.12,0.05), darkMetalMat); mag.position.set(0,-0.07,0.05); group.add(mag);
                 const bipodLeg1 = new THREE.Mesh(new THREE.BoxGeometry(0.02,0.3,0.02), darkMetalMat); bipodLeg1.position.set(0.05,-0.2,-0.35); group.add(bipodLeg1);
                 const bipodLeg2 = new THREE.Mesh(new THREE.BoxGeometry(0.02,0.3,0.02), darkMetalMat); bipodLeg2.position.set(-0.05,-0.2,-0.35); group.add(bipodLeg2);
-                leftHandPos.set(0.16, -0.2, -0.5);
-                rightHandPos.set(-0.16, -0.2, 0.05);
+                leftHandPos.set(0.16, -0.2, -0.5); rightHandPos.set(-0.16, -0.2, 0.05);
             } else if (currentWeapon === 'usps') {
                 const slide = new THREE.Mesh(new THREE.BoxGeometry(0.04,0.06,0.18), skinMat); slide.position.set(0,0.05,-0.05); group.add(slide);
                 const frame = new THREE.Mesh(new THREE.BoxGeometry(0.04,0.04,0.12), plasticMat); frame.position.set(0,0.01,-0.02); group.add(frame);
                 const grip = new THREE.Mesh(new THREE.BoxGeometry(0.04,0.08,0.03), plasticMat); grip.position.set(0,-0.04,0.02); group.add(grip);
                 const suppressor = new THREE.Mesh(new THREE.CylinderGeometry(0.015,0.015,0.2,8), darkMetalMat); suppressor.rotation.x=Math.PI/2; suppressor.position.set(0,0.06,-0.2); group.add(suppressor);
                 const triggerGuard = new THREE.Mesh(new THREE.TorusGeometry(0.015,0.005,6,12,Math.PI), darkMetalMat); triggerGuard.position.set(0,-0.02,-0.04); triggerGuard.rotation.z=Math.PI/2; group.add(triggerGuard);
-                leftHandPos.set(0.12, -0.1, -0.1);
-                rightHandPos.set(-0.12, -0.15, 0.02);
+                leftHandPos.set(0.12, -0.1, -0.1); rightHandPos.set(-0.12, -0.15, 0.02);
             } else if (currentWeapon === 'knife') {
                 const blade = new THREE.Mesh(new THREE.BoxGeometry(0.03,0.22,0.01), new THREE.MeshStandardMaterial({color:0xcccccc,roughness:0.2,metalness:0.9})); blade.position.set(0,0.12,0); group.add(blade);
                 const handle = new THREE.Mesh(new THREE.BoxGeometry(0.04,0.16,0.03), plasticMat); handle.position.set(0,-0.06,0); group.add(handle);
                 const guard = new THREE.Mesh(new THREE.BoxGeometry(0.06,0.02,0.04), new THREE.MeshStandardMaterial({color:0x888888,roughness:0.3,metalness:0.8})); guard.position.set(0,0.01,0); group.add(guard);
-                leftHandPos.set(0.12, -0.02, -0.02);
-                rightHandPos.set(-0.1, -0.06, 0.12);
+                leftHandPos.set(0.12, -0.02, -0.02); rightHandPos.set(-0.1, -0.06, 0.12);
             } else if (currentWeapon === 'karambit') {
                 const curve = new THREE.CubicBezierCurve3(new THREE.Vector3(0,0,0), new THREE.Vector3(0.05,0.15,0), new THREE.Vector3(0.15,0.25,0), new THREE.Vector3(0.12,0.35,0));
                 const bladeGeo = new THREE.TubeGeometry(curve,20,0.02,8,false);
                 const blade = new THREE.Mesh(bladeGeo, new THREE.MeshStandardMaterial({color:0xcccccc,roughness:0.2,metalness:0.9})); blade.rotation.z=-Math.PI/2; blade.position.set(0.08,0.1,0); group.add(blade);
                 const ringGeo = new THREE.TorusGeometry(0.045,0.015,8,16); const ring = new THREE.Mesh(ringGeo, darkMetalMat); ring.position.set(-0.02,-0.12,0); ring.rotation.x=Math.PI/2; group.add(ring);
                 const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.03,0.03,0.14,8), plasticMat); handle.position.set(0,-0.05,0); group.add(handle);
-                leftHandPos.set(0.1, -0.05, 0.05);
-                rightHandPos.set(-0.08, -0.12, 0.0);
+                leftHandPos.set(0.1, -0.05, 0.05); rightHandPos.set(-0.08, -0.12, 0.0);
             } else if (currentWeapon === 'butterfly') {
                 const blade = new THREE.Mesh(new THREE.BoxGeometry(0.03,0.2,0.01), new THREE.MeshStandardMaterial({color:0xcccccc,roughness:0.2,metalness:0.9})); blade.position.set(0,0.08,0); group.add(blade);
                 const pivot = new THREE.Mesh(new THREE.CylinderGeometry(0.02,0.02,0.04,8), darkMetalMat); pivot.position.set(0,-0.02,0); group.add(pivot);
                 const handle1 = new THREE.Mesh(new THREE.BoxGeometry(0.02,0.12,0.03), plasticMat); handle1.position.set(0.04,-0.08,0); handle1.rotation.z=0.3; group.add(handle1);
                 const handle2 = new THREE.Mesh(new THREE.BoxGeometry(0.02,0.12,0.03), plasticMat); handle2.position.set(-0.04,-0.08,0); handle2.rotation.z=-0.3; group.add(handle2);
-                leftHandPos.set(0.1, -0.08, -0.05);
-                rightHandPos.set(-0.1, -0.08, 0.05);
+                leftHandPos.set(0.1, -0.08, -0.05); rightHandPos.set(-0.1, -0.08, 0.05);
             }
-
             weaponModel = group;
             weaponGroup.add(group);
-
-            leftHand.position.copy(leftHandPos);
-            leftHand.rotation.set(0, 0, 0.2);
-            rightHand.position.copy(rightHandPos);
-            rightHand.rotation.set(0, 0, -0.2);
+            leftHand.position.copy(leftHandPos); leftHand.rotation.set(0, 0, 0.2);
+            rightHand.position.copy(rightHandPos); rightHand.rotation.set(0, 0, -0.2);
         }
         updateWeaponModel();
 
@@ -766,7 +743,6 @@
         function resetProgress() { if (confirm('Сбросить весь прогресс?')) { localStorage.clear(); inventory = []; equippedSkins = {}; equippedGloves = null; balance = 500; playerKills = 0; playerDeaths = 0; playerNickname = 'PlayerOne'; saveProgress(); updateProfileUI(); updateWeaponModel(); renderInventory(); document.getElementById('nicknameInput').value = playerNickname; alert('Прогресс сброшен.'); } }
         window.resetProgress = resetProgress;
 
-        // Скины и кейсы
         const baseSkins = [
             { name: 'Basic', weaponType: 'ak47', rarity: 'Consumer', color: '#9e9e9e', weight: 32 },
             { name: 'Matte Black', weaponType: 'm4a4', rarity: 'Consumer', weight: 32 },
@@ -836,39 +812,125 @@
             return 0.5;
         }
 
+        // Улучшенная 3D-модель кейса (как в CS2)
         function createCaseModel(caseData, container) {
             const w = container.clientWidth || 160;
             const h = container.clientHeight || 160;
-            const scene = new THREE.Scene(); scene.background = new THREE.Color(0x1a1a1a);
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x0a0a0a);
             const cam = new THREE.PerspectiveCamera(45, w/h, 0.1, 10);
-            cam.position.set(2, 1.5, 2.5); cam.lookAt(0,0,0);
+            cam.position.set(2, 1.5, 2.5);
+            cam.lookAt(0, 0, 0);
             const renderer3d = new THREE.WebGLRenderer({ antialias: true });
             renderer3d.setSize(w, h);
             container.appendChild(renderer3d.domElement);
-            const light = new THREE.DirectionalLight(0xffffff, 1.2); light.position.set(2,3,2); scene.add(light);
-            scene.add(new THREE.AmbientLight(0x404040, 1.0));
 
-            const texCanvas = document.createElement('canvas'); texCanvas.width=512; texCanvas.height=512;
+            // Освещение для бликов
+            const light1 = new THREE.DirectionalLight(0xffffff, 1.5);
+            light1.position.set(2, 3, 2);
+            scene.add(light1);
+            const light2 = new THREE.DirectionalLight(0xccccff, 0.8);
+            light2.position.set(-2, 1, -1);
+            scene.add(light2);
+            scene.add(new THREE.AmbientLight(0x404040, 1.2));
+
+            // Текстура с логотипом и надписями
+            const texCanvas = document.createElement('canvas');
+            texCanvas.width = 512; texCanvas.height = 512;
             const ctx = texCanvas.getContext('2d');
-            ctx.fillStyle = caseData.color; ctx.fillRect(0,0,512,512);
-            ctx.fillStyle = 'rgba(0,0,0,0.2)'; for (let x=20;x<512;x+=40) ctx.fillRect(x,0,10,512);
-            ctx.fillStyle = 'rgba(255,255,255,0.1)'; for (let y=30;y<512;y+=60) ctx.fillRect(0,y,512,5);
-            ctx.fillStyle = '#ffaa00'; ctx.fillRect(0,400,512,20); ctx.fillStyle = '#000000'; ctx.fillRect(0,405,512,10);
-            ctx.fillStyle = '#ffffff'; ctx.font='bold 36px Arial'; ctx.textAlign='center'; ctx.fillText('WEAPON CASE',256,180);
-            ctx.font='italic bold 28px Arial'; ctx.fillText('QULI STRIKE',256,230);
-            ctx.fillStyle = '#cccccc'; ctx.font='16px monospace'; ctx.fillText('S/N: QS2-7741-ALPHA',256,340);
-            ctx.fillStyle = '#444444'; ctx.fillRect(50,440,100,30); ctx.fillRect(362,440,100,30);
-            ctx.fillStyle = '#222222'; ctx.fillRect(60,445,80,20); ctx.fillRect(372,445,80,20);
+            // Металлическая основа с градиентом
+            const grad = ctx.createLinearGradient(0, 0, 512, 512);
+            grad.addColorStop(0, '#555555');
+            grad.addColorStop(0.5, '#888888');
+            grad.addColorStop(1, '#444444');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, 512, 512);
+            // Царапины и потёртости
+            for (let i = 0; i < 200; i++) {
+                ctx.strokeStyle = `rgba(0,0,0,${Math.random()*0.3})`;
+                ctx.lineWidth = Math.random()*2;
+                ctx.beginPath();
+                ctx.moveTo(Math.random()*512, Math.random()*512);
+                ctx.lineTo(Math.random()*512, Math.random()*512);
+                ctx.stroke();
+            }
+            // Полосы опасности
+            ctx.fillStyle = '#ffaa00';
+            ctx.fillRect(0, 420, 512, 20);
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 425, 512, 10);
+            // Логотип CS2
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 36px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('WEAPON CASE', 256, 180);
+            ctx.font = 'italic bold 28px Arial';
+            ctx.fillText('QULI STRIKE', 256, 230);
+            ctx.fillStyle = '#cccccc';
+            ctx.font = '16px monospace';
+            ctx.fillText('S/N: QS2-7741-ALPHA', 256, 340);
+            // Ручки и замок
+            ctx.fillStyle = '#666666';
+            ctx.fillRect(50, 440, 100, 30);
+            ctx.fillRect(362, 440, 100, 30);
+            ctx.fillStyle = '#222222';
+            ctx.fillRect(60, 445, 80, 20);
+            ctx.fillRect(372, 445, 80, 20);
             const caseTexture = new THREE.CanvasTexture(texCanvas);
 
-            const bodyMat = new THREE.MeshStandardMaterial({ map: caseTexture, roughness:0.5, metalness:0.8 });
-            const accentMat = new THREE.MeshStandardMaterial({ color:0x111111, roughness:0.3, metalness:0.9 });
+            // Материал с высоким metalness для бликов
+            const bodyMat = new THREE.MeshStandardMaterial({ map: caseTexture, roughness: 0.3, metalness: 0.95 });
+            const accentMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.2, metalness: 0.9 });
+            const emissiveMat = new THREE.MeshStandardMaterial({ color: caseData.color, roughness: 0.2, metalness: 0.8, emissive: caseData.color, emissiveIntensity: 0.4 });
+
             const group = new THREE.Group();
-            const body = new THREE.Mesh(new THREE.BoxGeometry(0.8,0.6,0.4), bodyMat); group.add(body);
-            const cornerGeo = new THREE.BoxGeometry(0.15,0.15,0.1);
-            [[0.375,0.225,0.15],[0.375,-0.225,0.15],[-0.375,0.225,0.15],[-0.375,-0.225,0.15],[0.375,0.225,-0.15],[0.375,-0.225,-0.15],[-0.375,0.225,-0.15],[-0.375,-0.225,-0.15]].forEach(pos => { const c=new THREE.Mesh(cornerGeo,accentMat); c.position.set(...pos); group.add(c); });
-            const lock = new THREE.Mesh(new THREE.BoxGeometry(0.2,0.1,0.08), accentMat); lock.position.set(0,-0.25,0.22); group.add(lock);
-            const keyhole = new THREE.Mesh(new THREE.CylinderGeometry(0.02,0.02,0.02,8), new THREE.MeshStandardMaterial({color:0x000000})); keyhole.rotation.x=Math.PI/2; keyhole.position.set(0,-0.25,0.26); group.add(keyhole);
+
+            // Основное тело с фасками (используем BoxGeometry с небольшой детализацией)
+            const body = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.6, 0.4), bodyMat);
+            group.add(body);
+
+            // Уголки
+            const cornerGeo = new THREE.BoxGeometry(0.15, 0.15, 0.1);
+            const corners = [
+                [0.375, 0.225, 0.15], [0.375, -0.225, 0.15], [-0.375, 0.225, 0.15], [-0.375, -0.225, 0.15],
+                [0.375, 0.225, -0.15], [0.375, -0.225, -0.15], [-0.375, 0.225, -0.15], [-0.375, -0.225, -0.15]
+            ];
+            corners.forEach(pos => {
+                const corner = new THREE.Mesh(cornerGeo, accentMat);
+                corner.position.set(...pos);
+                group.add(corner);
+            });
+
+            // Замок с эмиссией
+            const lock = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.1, 0.08), emissiveMat);
+            lock.position.set(0, -0.25, 0.22);
+            group.add(lock);
+            const keyhole = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.02, 8), new THREE.MeshStandardMaterial({ color: 0x000000, roughness: 0.1, metalness: 0.5 }));
+            keyhole.rotation.x = Math.PI/2;
+            keyhole.position.set(0, -0.25, 0.26);
+            group.add(keyhole);
+
+            // Ручки
+            const handleGeo = new THREE.TorusGeometry(0.06, 0.02, 8, 16);
+            const handle1 = new THREE.Mesh(handleGeo, accentMat);
+            handle1.position.set(0.5, 0, 0.15);
+            handle1.rotation.y = Math.PI/2;
+            group.add(handle1);
+            const handle2 = new THREE.Mesh(handleGeo, accentMat);
+            handle2.position.set(-0.5, 0, 0.15);
+            handle2.rotation.y = Math.PI/2;
+            group.add(handle2);
+
+            // Светящаяся полоса
+            const stripeGeo = new THREE.BoxGeometry(0.05, 0.6, 0.41);
+            const stripeMat = new THREE.MeshStandardMaterial({ color: caseData.color, roughness: 0.1, metalness: 0.3, emissive: caseData.color, emissiveIntensity: 0.7 });
+            const stripe1 = new THREE.Mesh(stripeGeo, stripeMat);
+            stripe1.position.set(0.15, 0, 0);
+            group.add(stripe1);
+            const stripe2 = new THREE.Mesh(stripeGeo, stripeMat);
+            stripe2.position.set(-0.15, 0, 0);
+            group.add(stripe2);
+
             scene.add(group);
             return { scene, cam, renderer3d, group };
         }
@@ -905,7 +967,12 @@
                     if (container && !caseScenes[i]) {
                         const cs = createCaseModel(c, container);
                         caseScenes[i] = cs;
-                        function anim() { if(!caseScenes[i]) return; cs.group.rotation.y += 0.005; cs.renderer3d.render(cs.scene, cs.cam); requestAnimationFrame(anim); }
+                        function anim() {
+                            if (!caseScenes[i]) return;
+                            cs.group.rotation.y += 0.01;
+                            cs.renderer3d.render(cs.scene, cs.cam);
+                            requestAnimationFrame(anim);
+                        }
                         anim();
                     }
                 }, 100);
@@ -926,7 +993,7 @@
             });
             saveProgress();
             updateProfileUI();
-            renderCases(); // обновить баланс
+            renderCases();
             alert(`Кейс "${cases[caseIndex].name}" куплен и добавлен в инвентарь!`);
         }
 
