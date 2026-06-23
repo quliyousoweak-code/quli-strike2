@@ -1,899 +1,493 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>QULI STRIKE 2 – CS2 HUD</title>
-  <style>
-    /* ========== ГЛОБАЛЬНЫЕ СТИЛИ ========== */
-    :root {
-      --bg: #0a0a0a;
-      --panel: #141414;
-      --accent: #9c27b0;
-      --gold: #ffd700;
-      --text: #e0e0e0;
-      --hud-accent: #b560f0;
-    }
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body {
-      background: #000;
-      font-family: 'Segoe UI', Arial, sans-serif;
-      overflow: hidden;
-      user-select: none;
-      -webkit-user-select: none;
-      width: 100vw;
-      height: 100vh;
-      color: var(--text);
-    }
-    #gameCanvas {
-      position: fixed; top:0; left:0; width:100%; height:100%; z-index:1; cursor:none;
-    }
-    #uiLayer {
-      position: fixed; top:0; left:0; width:100%; height:100%; z-index:10; pointer-events:none;
-    }
-    #uiLayer.active { pointer-events:all; }
-
-    /* ========== ЭКРАНЫ МЕНЮ ========== */
-    .screen {
-      position: absolute; top:0; left:0; width:100%; height:100%;
-      display: flex; align-items:center; justify-content:center;
-      pointer-events:none; opacity:0; transition:opacity 0.3s;
-    }
-    .screen.visible { opacity:1; pointer-events:all; }
-    #menuScreen {
-      background: radial-gradient(ellipse at center, #2e0a2e 0%, #000000 70%);
-      flex-direction: column; gap:20px;
-    }
-    #menuScreen .logo {
-      font-size:64px; font-weight:900; letter-spacing:6px; color:#fff;
-      text-shadow:0 0 40px rgba(156,39,176,0.6),0 0 80px rgba(156,39,176,0.3);
-      margin-bottom:10px; text-transform:uppercase;
-    }
-    #menuScreen .logo span { color: var(--accent); }
-    .btn {
-      padding:14px 50px; font-size:16px; font-weight:700; letter-spacing:2px;
-      text-transform:uppercase; border:none;
-      background:linear-gradient(135deg, #1e1e1e 0%, #2a2a2a 100%);
-      color:#ccc; cursor:pointer; transition:all 0.3s ease;
-      min-width:240px; text-align:center; position:relative; overflow:hidden;
-      border-radius:30px; box-shadow:0 4px 12px rgba(0,0,0,0.3);
-    }
-    .btn::after {
-      content:''; position:absolute; top:0; left:-100%; width:100%; height:100%;
-      background:linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
-      transition:left 0.5s;
-    }
-    .btn:hover::after { left:100%; }
-    .btn:hover { transform:translateY(-3px); box-shadow:0 8px 24px rgba(0,0,0,0.5); color:#fff; }
-    .btn.accent {
-      background:linear-gradient(135deg, #9c27b0, #7b1fa2);
-      color:#fff; border:1px solid #ce93d8;
-      box-shadow:0 0 20px rgba(156,39,176,0.3);
-    }
-    .btn.accent:hover { background:linear-gradient(135deg, #ab47bc, #8e24aa); box-shadow:0 0 40px rgba(156,39,176,0.7); }
-    .btn.gold {
-      background:linear-gradient(135deg, #ffd700, #b8860b);
-      color:#000; border:1px solid #ffec8b;
-      box-shadow:0 0 20px rgba(255,215,0,0.4); font-weight:800;
-    }
-    .btn.gold:hover { background:linear-gradient(135deg, #ffe44d, #c99718); box-shadow:0 0 45px rgba(255,215,0,0.8); }
-    #profileBlock {
-      position:absolute; top:30px; right:40px;
-      background:#1a1a1a; border:1px solid #2a2a2a; border-radius:12px;
-      padding:20px; display:flex; align-items:center; gap:16px; min-width:200px;
-      backdrop-filter:blur(10px);
-    }
-    #profileBlock .avatar {
-      width:56px; height:56px; border-radius:50%;
-      background:linear-gradient(135deg, #9c27b0, #7b1fa2);
-      display:flex; align-items:center; justify-content:center;
-      font-size:24px; font-weight:900; color:#fff;
-    }
-    #profileBlock .info .nick { font-weight:700; font-size:16px; color:#fff; }
-    #profileBlock .info .level { font-size:12px; color:#9c27b0; }
-    #profileBlock .info .balance { font-size:13px; color:#ffd700; font-weight:600; }
-
-    /* ========== ИНВЕНТАРЬ, КЕЙСЫ, МАГАЗИН ========== */
-    #inventoryScreen, #casesScreen, #shopScreen, #settingsScreen {
-      background:#0d0d0d; flex-direction:column; align-items:center; gap:16px; padding:40px; overflow-y:auto;
-    }
-    #inventoryScreen h2, #casesScreen h2, #shopScreen h2, #settingsScreen h2 {
-      font-size:32px; letter-spacing:4px; color:#fff; margin-bottom:10px;
-    }
-    .card-grid { display:flex; flex-wrap:wrap; gap:14px; justify-content:center; max-width:1200px; }
-    .skin-card {
-      width:150px; height:220px; border:2px solid #2a2a2a; border-radius:10px;
-      display:flex; flex-direction:column; align-items:center; justify-content:space-between;
-      padding:12px; transition:all 0.3s; cursor:pointer; position:relative;
-    }
-    .skin-card:hover { border-color:#fff; transform:translateY(-5px); box-shadow:0 10px 30px rgba(0,0,0,0.5); }
-    .skin-card.equipped { border-color:#9c27b0 !important; box-shadow:0 0 20px rgba(156,39,176,0.4) !important; }
-    .skin-card .rarity-strip {
-      position:absolute; top:0; left:0; right:0; height:4px; border-radius:10px 10px 0 0;
-    }
-    .skin-card .skin-name { font-size:11px; font-weight:700; text-align:center; color:#ccc; margin-top:8px; }
-    .skin-card .weapon-name { font-size:10px; color:#888; }
-    .skin-card .rarity-label { font-size:9px; letter-spacing:1px; text-transform:uppercase; font-weight:600; }
-    .skin-card .equip-btn, .skin-card .sell-btn {
-      padding:6px 14px; font-size:10px; font-weight:700; letter-spacing:1px;
-      border:none; background:#222; color:#aaa; cursor:pointer; border-radius:20px;
-      transition:all 0.2s; box-shadow:0 2px 6px rgba(0,0,0,0.3); margin:2px;
-    }
-    .skin-card .sell-btn { background:#3a1010; color:#ffaaaa; }
-    .skin-card .equip-btn:hover { background:#333; color:#fff; }
-    .skin-card .sell-btn:hover { background:#5a1a1a; color:#ffcccc; }
-    .case-card {
-      width:200px; height:300px; background:linear-gradient(145deg, #1e1e1e, #111);
-      border:2px solid #333; border-radius:14px;
-      display:flex; flex-direction:column; align-items:center; justify-content:space-between;
-      gap:8px; cursor:pointer; transition:all 0.3s; box-shadow:0 6px 18px rgba(0,0,0,0.4); padding:16px;
-    }
-    .case-card:hover { border-color:#ffd700; box-shadow:0 0 30px rgba(255,215,0,0.3); transform:translateY(-5px); }
-    .case-card .case-view { width:160px; height:160px; border-radius:8px; overflow:hidden; }
-    .case-card .case-name { font-weight:700; color:#fff; font-size:14px; }
-    .case-card .case-price { color:#ffd700; font-weight:600; }
-
-    /* ========== РУЛЕТКА КЕЙСОВ ========== */
-    #rouletteOverlay {
-      position:fixed; top:0; left:0; width:100%; height:100%;
-      background:rgba(0,0,0,0.65); backdrop-filter:blur(6px);
-      z-index:100; display:flex; flex-direction:column; align-items:center; justify-content:center;
-      gap:20px; pointer-events:none; opacity:0; transition:opacity 0.3s;
-    }
-    #rouletteOverlay.active { opacity:1; pointer-events:all; }
-    #rouletteStrip { display:flex; gap:4px; will-change:transform; }
-    #rouletteWindow {
-      width:600px; height:100px; overflow:hidden; border:3px solid #9c27b0;
-      border-radius:8px; position:relative; background:#111;
-    }
-    #roulettePointer {
-      position:absolute; top:0; bottom:0; left:50%; width:3px;
-      background:#ffd700; z-index:5; box-shadow:0 0 20px #ffd700; transform:translateX(-50%);
-    }
-    .roulette-item {
-      min-width:90px; height:100px; display:flex; align-items:center; justify-content:center;
-      font-weight:700; font-size:10px; text-align:center; color:#fff; border-radius:4px; flex-shrink:0;
-    }
-    #winPopup {
-      position:fixed; top:50%; left:50%; transform:translate(-50%, -50%) scale(0);
-      background:#1a1a1a; border:3px solid #ffd700; border-radius:20px; padding:30px;
-      z-index:110; text-align:center; transition:transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      box-shadow:0 0 60px rgba(255,215,0,0.5);
-    }
-    #winPopup.show { transform:translate(-50%, -50%) scale(1); }
-
-    /* ========== ИГРОВОЙ HUD (CS2 STYLE) ========== */
-    #hudOverlay {
-      position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
-      display:none; z-index:15; pointer-events:none;
-      justify-content:space-between; align-items:center; width:95%; max-width:1200px;
-      background:rgba(10,10,10,0.85); backdrop-filter:blur(4px);
-      padding:8px 25px; border-radius:12px; border:1px solid rgba(156,39,176,0.2);
-      box-shadow:0 -2px 15px rgba(0,0,0,0.7); color:white;
-    }
-    #hudOverlay.visible { display:flex; }
-    .hud-left { display:flex; align-items:center; gap:25px; }
-    .hud-money {
-      font-size:32px; font-weight:900; color:#b560f0;
-      text-shadow:0 0 8px rgba(180,96,240,0.5); letter-spacing:1px; min-width:110px;
-    }
-    .hud-stat { display:flex; align-items:center; gap:6px; font-size:20px; font-weight:700; }
-    .hud-stat .icon { font-size:22px; filter:drop-shadow(0 0 4px currentColor); }
-    .hud-stat .armor-icon { color:#b560f0; }
-    .hud-stat .health-icon { color:#ffffff; text-shadow:0 0 6px rgba(255,255,255,0.8); }
-    .hud-stat .value { color:white; text-shadow:0 0 5px rgba(255,255,255,0.6); min-width:30px; }
-    .hud-ammo { display:flex; align-items:baseline; gap:4px; font-weight:700; }
-    .hud-ammo .current { font-size:28px; color:white; text-shadow:0 0 8px rgba(255,255,255,0.7); }
-    .hud-ammo .sep { color:#b560f0; font-size:24px; margin:0 2px; }
-    .hud-ammo .reserve { font-size:28px; color:#b560f0; text-shadow:0 0 8px rgba(180,96,240,0.6); }
-    .hud-grenades { display:flex; gap:8px; }
-    .hud-grenade {
-      width:36px; height:36px; background:rgba(30,30,30,0.9); border:2px solid #b560f0;
-      border-radius:6px; display:flex; align-items:center; justify-content:center;
-      font-size:18px; color:#b560f0; transition:all 0.2s; box-shadow:0 0 6px rgba(180,96,240,0.3);
-    }
-    .hud-grenade.active { border-color:#ffffff; box-shadow:0 0 18px #ffffffcc; color:white; }
-
-    /* ========== ПРИЦЕЛ И ПРОЧЕЕ ========== */
-    #crosshair {
-      position:fixed; top:50%; left:50%; transform:translate(-50%, -50%);
-      z-index:15; pointer-events:none; display:none; opacity:0.8;
-    }
-    #crosshair.visible { display:flex; align-items:center; justify-content:center; }
-    #crosshair::before, #crosshair::after { content:''; position:absolute; background:#fff; }
-    #crosshair::before { width:2px; height:16px; }
-    #crosshair::after { width:16px; height:2px; }
-    #crosshair .dot { width:4px; height:4px; background:#9c27b0; border-radius:50%; z-index:1; }
-    #killFeed {
-      position:fixed; top:80px; right:20px; z-index:15; pointer-events:none;
-      display:flex; flex-direction:column; gap:4px;
-    }
-    .kill-entry {
-      background:rgba(0,0,0,0.7); padding:6px 12px; border-radius:4px;
-      font-size:12px; font-weight:600; color:#fff; animation:fadeOut 4s forwards;
-    }
-    @keyframes fadeOut { 0%{opacity:1} 70%{opacity:1} 100%{opacity:0} }
-    #deathScreen {
-      position:fixed; top:0; left:0; width:100%; height:100%;
-      background:rgba(180,0,0,0.5); z-index:20;
-      display:flex; flex-direction:column; align-items:center; justify-content:center;
-      pointer-events:none; opacity:0; transition:opacity 0.5s;
-    }
-    #deathScreen.active { opacity:1; pointer-events:all; }
-    #deathScreen h1 { font-size:60px; color:#fff; letter-spacing:6px; text-shadow:0 0 30px red; }
-    #deathScreen .respawning { font-size:18px; color:#ccc; margin-top:10px; }
-    #scoreboard {
-      position:fixed; top:50%; left:50%; transform:translate(-50%, -50%);
-      background:rgba(0,0,0,0.9); border:2px solid #333; border-radius:12px;
-      padding:30px; z-index:25; pointer-events:none; opacity:0; transition:opacity 0.2s;
-      min-width:350px;
-    }
-    #scoreboard.active { opacity:1; pointer-events:all; }
-    #scoreboard h3 { text-align:center; letter-spacing:3px; margin-bottom:16px; color:#fff; }
-    #scoreboard table { width:100%; border-collapse:collapse; color:#ccc; }
-    #scoreboard th, #scoreboard td { padding:6px 12px; text-align:center; border-bottom:1px solid #222; }
-    #hitMarker {
-      position:fixed; top:50%; left:50%; transform:translate(-50%, -50%) scale(0);
-      width:30px; height:30px; z-index:16; pointer-events:none; opacity:0;
-    }
-    #hitMarker.show { animation:hitPop 0.3s ease-out; }
-    @keyframes hitPop {
-      0% { transform:translate(-50%, -50%) scale(0); opacity:1; }
-      100% { transform:translate(-50%, -50%) scale(1.5); opacity:0; }
-    }
-    .back-btn {
-      position:absolute; top:20px; left:20px; padding:10px 20px; font-size:12px;
-      letter-spacing:1px; border:1px solid #555; background:#1a1a1a; color:#aaa;
-      cursor:pointer; z-index:30; border-radius:30px; transition:all 0.3s;
-    }
-    .back-btn:hover { border-color:#fff; color:#fff; }
-    .settings-row { display:flex; align-items:center; gap:12px; margin:8px 0; }
-    .settings-row input {
-      padding:8px 12px; border-radius:20px; border:1px solid #555;
-      background:#1a1a1a; color:#fff; font-size:14px;
-    }
-    .settings-row button { border-radius:20px; padding:8px 20px; font-size:14px; }
-    .shop-menu {
-      position: fixed; top:0; left:0; width:100%; height:100%;
-      background: rgba(0,0,0,0.85); display:none; align-items:center; justify-content:center;
-      z-index:200; flex-direction:column; backdrop-filter: blur(4px);
-    }
-    .shop-menu.visible { display:flex; }
-    .shop-panel {
-      background:#1e1e1e; border:2px solid #9c27b0; border-radius:12px;
-      padding:20px; width:700px; text-align:center; position: relative;
-    }
-    .shop-panel h2 { margin-bottom: 20px; }
-    .shop-grid { display:grid; grid-template-columns: repeat(3,1fr); gap:15px; margin-bottom:0px; }
-    .shop-item {
-      background:#2a2a2a; border:2px solid #444; border-radius:8px;
-      padding:15px; cursor:pointer; transition:0.2s; color:#fff;
-    }
-    .shop-item:hover { border-color:#9c27b0; transform:scale(1.03); }
-    .shop-item.disabled { opacity:0.5; cursor:not-allowed; border-color:#555; }
-    .shop-item.disabled:hover { transform:none; border-color:#555; }
-    .shop-item-name { font-weight:bold; font-size:18px; margin-bottom:5px; }
-    .shop-item-price { color:#9c27b0; font-weight:bold; }
-    .weapon-slot {
-      position: fixed; right: 20px; bottom: 20px;
-      display: flex; flex-direction: column; gap: 10px; z-index: 250;
-    }
-    .weapon-slot-item {
-      background: rgba(0,0,0,0.8); border: 2px solid #555; border-radius: 8px;
-      padding: 10px; color: #fff; font-weight: bold; text-align: center; min-width: 100px;
-    }
-    .weapon-slot-item.active { border-color: #9c27b0; box-shadow: 0 0 15px rgba(156,39,176,0.5); }
-    .weapon-slot-item .key { font-size: 14px; color: #9c27b0; }
-    .weapon-slot-item .name { font-size: 12px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QULI STRIKE 2 - Browser FPS</title>
+    <style>
+        :root { --bg: #0a0a0a; --panel: #141414; --accent: #9c27b0; --gold: #ffd700; --text: #e0e0e0; }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { background:#000; font-family:'Segoe UI',Arial,sans-serif; overflow:hidden; user-select:none; width:100vw; height:100vh; color:var(--text); }
+        #gameCanvas { position:fixed; top:0; left:0; width:100%; height:100%; z-index:1; cursor:none; }
+        #uiLayer { position:fixed; top:0; left:0; width:100%; height:100%; z-index:10; pointer-events:none; }
+        #uiLayer.active { pointer-events:all; }
+        .screen { position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; pointer-events:none; opacity:0; transition:opacity 0.3s; }
+        .screen.visible { opacity:1; pointer-events:all; }
+        #menuScreen { background:radial-gradient(ellipse at center, #2e0a2e 0%, #000000 70%); flex-direction:column; gap:20px; }
+        #menuScreen .logo { font-size:64px; font-weight:900; letter-spacing:6px; color:#fff; text-shadow:0 0 40px rgba(156,39,176,0.6),0 0 80px rgba(156,39,176,0.3); margin-bottom:10px; text-transform:uppercase; }
+        #menuScreen .logo span { color:#9c27b0; }
+        .btn { padding:14px 50px; font-size:16px; font-weight:700; letter-spacing:2px; text-transform:uppercase; border:none; background:linear-gradient(135deg, #1e1e1e 0%, #2a2a2a 100%); color:#ccc; cursor:pointer; transition:all 0.3s ease; min-width:240px; text-align:center; position:relative; overflow:hidden; border-radius:30px; box-shadow:0 4px 12px rgba(0,0,0,0.3); }
+        .btn::after { content:''; position:absolute; top:0; left:-100%; width:100%; height:100%; background:linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent); transition:left 0.5s; }
+        .btn:hover::after { left:100%; }
+        .btn:hover { transform:translateY(-3px); box-shadow:0 8px 24px rgba(0,0,0,0.5); color:#fff; }
+        .btn.accent { background:linear-gradient(135deg, #9c27b0, #7b1fa2); color:#fff; border:1px solid #ce93d8; box-shadow:0 0 20px rgba(156,39,176,0.3); }
+        .btn.accent:hover { background:linear-gradient(135deg, #ab47bc, #8e24aa); box-shadow:0 0 40px rgba(156,39,176,0.7); }
+        .btn.gold { background:linear-gradient(135deg, #ffd700, #b8860b); color:#000; border:1px solid #ffec8b; box-shadow:0 0 20px rgba(255,215,0,0.4); font-weight:800; }
+        .btn.gold:hover { background:linear-gradient(135deg, #ffe44d, #c99718); box-shadow:0 0 45px rgba(255,215,0,0.8); }
+        #profileBlock { position:absolute; top:30px; right:40px; background:#1a1a1a; border:1px solid #2a2a2a; border-radius:12px; padding:20px; display:flex; align-items:center; gap:16px; min-width:200px; backdrop-filter:blur(10px); }
+        #profileBlock .avatar { width:56px; height:56px; border-radius:50%; background:linear-gradient(135deg, #9c27b0, #7b1fa2); display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:900; color:#fff; }
+        #profileBlock .info .nick { font-weight:700; font-size:16px; color:#fff; }
+        #profileBlock .info .level { font-size:12px; color:#9c27b0; }
+        #profileBlock .info .balance { font-size:13px; color:#ffd700; font-weight:600; }
+        #inventoryScreen, #casesScreen, #shopScreen, #settingsScreen { background:#0d0d0d; flex-direction:column; align-items:center; gap:16px; padding:40px; overflow-y:auto; }
+        #inventoryScreen h2, #casesScreen h2, #shopScreen h2, #settingsScreen h2 { font-size:32px; letter-spacing:4px; color:#fff; margin-bottom:10px; }
+        .card-grid { display:flex; flex-wrap:wrap; gap:14px; justify-content:center; max-width:1200px; }
+        .skin-card { width:150px; height:220px; border:2px solid #2a2a2a; border-radius:10px; display:flex; flex-direction:column; align-items:center; justify-content:space-between; padding:12px; transition:all 0.3s; cursor:pointer; position:relative; }
+        .skin-card:hover { border-color:#fff; transform:translateY(-5px); box-shadow:0 10px 30px rgba(0,0,0,0.5); }
+        .skin-card.equipped { border-color:#9c27b0 !important; box-shadow:0 0 20px rgba(156,39,176,0.4) !important; }
+        .skin-card .rarity-strip { position:absolute; top:0; left:0; right:0; height:4px; border-radius:10px 10px 0 0; }
+        .skin-card .skin-name { font-size:11px; font-weight:700; text-align:center; color:#ccc; margin-top:8px; }
+        .skin-card .weapon-name { font-size:10px; color:#888; }
+        .skin-card .rarity-label { font-size:9px; letter-spacing:1px; text-transform:uppercase; font-weight:600; }
+        .skin-card .equip-btn, .skin-card .sell-btn { padding:6px 14px; font-size:10px; font-weight:700; letter-spacing:1px; border:none; background:#222; color:#aaa; cursor:pointer; border-radius:20px; transition:all 0.2s; box-shadow:0 2px 6px rgba(0,0,0,0.3); margin:2px; }
+        .skin-card .sell-btn { background:#3a1010; color:#ffaaaa; }
+        .skin-card .equip-btn:hover { background:#333; color:#fff; }
+        .skin-card .sell-btn:hover { background:#5a1a1a; color:#ffcccc; }
+        .case-card { width:200px; height:280px; background:linear-gradient(145deg, #1e1e1e, #111); border:2px solid #333; border-radius:14px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; cursor:pointer; transition:all 0.3s; box-shadow:0 6px 18px rgba(0,0,0,0.4); }
+        .case-card:hover { border-color:#ffd700; box-shadow:0 0 30px rgba(255,215,0,0.3); transform:translateY(-5px); }
+        .case-card .case-name { font-weight:700; color:#fff; font-size:14px; }
+        .case-card .case-price { color:#ffd700; font-weight:600; }
+        #rouletteOverlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.65); backdrop-filter:blur(6px); z-index:100; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px; pointer-events:none; opacity:0; transition:opacity 0.3s; }
+        #rouletteOverlay.active { opacity:1; pointer-events:all; }
+        #rouletteStrip { display:flex; gap:4px; will-change:transform; }
+        #rouletteWindow { width:600px; height:100px; overflow:hidden; border:3px solid #9c27b0; border-radius:8px; position:relative; background:#111; }
+        #roulettePointer { position:absolute; top:0; bottom:0; left:50%; width:3px; background:#ffd700; z-index:5; box-shadow:0 0 20px #ffd700; transform:translateX(-50%); }
+        .roulette-item { min-width:90px; height:100px; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:10px; text-align:center; color:#fff; border-radius:4px; flex-shrink:0; }
+        #winPopup { position:fixed; top:50%; left:50%; transform:translate(-50%, -50%) scale(0); background:#1a1a1a; border:3px solid #ffd700; border-radius:20px; padding:30px; z-index:110; text-align:center; transition:transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow:0 0 60px rgba(255,215,0,0.5); }
+        #winPopup.show { transform:translate(-50%, -50%) scale(1); }
+        /* НОВЫЙ HUD В СТИЛЕ CS2 */
+        #hudOverlay { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); display:none; z-index:15; pointer-events:none; justify-content:space-between; align-items:center; width:95%; max-width:1200px; background:rgba(10,10,10,0.85); backdrop-filter:blur(4px); padding:8px 25px; border-radius:12px; border:1px solid rgba(156,39,176,0.2); box-shadow:0 -2px 15px rgba(0,0,0,0.7); color:white; }
+        #hudOverlay.visible { display:flex; }
+        .hud-left { display:flex; align-items:center; gap:25px; }
+        .hud-money { font-size:32px; font-weight:900; color:#b560f0; text-shadow:0 0 8px rgba(180,96,240,0.5); letter-spacing:1px; min-width:110px; }
+        .hud-stat { display:flex; align-items:center; gap:6px; font-size:20px; font-weight:700; }
+        .hud-stat .icon { font-size:22px; filter:drop-shadow(0 0 4px currentColor); }
+        .hud-stat .armor-icon { color:#b560f0; }
+        .hud-stat .health-icon { color:#ffffff; text-shadow:0 0 6px rgba(255,255,255,0.8); }
+        .hud-stat .value { color:white; text-shadow:0 0 5px rgba(255,255,255,0.6); min-width:30px; }
+        .hud-ammo { display:flex; align-items:baseline; gap:4px; font-weight:700; }
+        .hud-ammo .current { font-size:28px; color:white; text-shadow:0 0 8px rgba(255,255,255,0.7); }
+        .hud-ammo .sep { color:#b560f0; font-size:24px; margin:0 2px; }
+        .hud-ammo .reserve { font-size:28px; color:#b560f0; text-shadow:0 0 8px rgba(180,96,240,0.6); }
+        .hud-grenades { display:flex; gap:8px; }
+        .hud-grenade { width:36px; height:36px; background:rgba(30,30,30,0.9); border:2px solid #b560f0; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:18px; color:#b560f0; }
+        #crosshair { position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); z-index:15; pointer-events:none; display:none; opacity:0.8; }
+        #crosshair.visible { display:flex; align-items:center; justify-content:center; }
+        #crosshair::before, #crosshair::after { content:''; position:absolute; background:#fff; }
+        #crosshair::before { width:2px; height:16px; }
+        #crosshair::after { width:16px; height:2px; }
+        #crosshair .dot { width:4px; height:4px; background:#9c27b0; border-radius:50%; z-index:1; }
+        #killFeed { position:fixed; top:80px; right:20px; z-index:15; pointer-events:none; display:flex; flex-direction:column; gap:4px; }
+        .kill-entry { background:rgba(0,0,0,0.7); padding:6px 12px; border-radius:4px; font-size:12px; font-weight:600; color:#fff; animation:fadeOut 4s forwards; }
+        @keyframes fadeOut { 0%{opacity:1} 70%{opacity:1} 100%{opacity:0} }
+        #deathScreen { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(180,0,0,0.5); z-index:20; display:flex; flex-direction:column; align-items:center; justify-content:center; pointer-events:none; opacity:0; transition:opacity 0.5s; }
+        #deathScreen.active { opacity:1; pointer-events:all; }
+        #deathScreen h1 { font-size:60px; color:#fff; letter-spacing:6px; text-shadow:0 0 30px red; }
+        .back-btn { position:absolute; top:20px; left:20px; padding:10px 20px; font-size:12px; letter-spacing:1px; border:1px solid #555; background:#1a1a1a; color:#aaa; cursor:pointer; z-index:30; border-radius:30px; transition:all 0.3s; }
+        .back-btn:hover { border-color:#fff; color:#fff; }
+        .settings-row { display:flex; align-items:center; gap:12px; margin:8px 0; }
+        .settings-row input { padding:8px 12px; border-radius:20px; border:1px solid #555; background:#1a1a1a; color:#fff; font-size:14px; }
+        .shop-menu { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); display:none; align-items:center; justify-content:center; z-index:200; flex-direction:column; backdrop-filter: blur(4px); }
+        .shop-menu.visible { display:flex; }
+        .shop-panel { background:#1e1e1e; border:2px solid #9c27b0; border-radius:12px; padding:20px; width:700px; text-align:center; position: relative; }
+        .shop-grid { display:grid; grid-template-columns: repeat(3,1fr); gap:15px; margin-bottom:0px; }
+        .shop-item { background:#2a2a2a; border:2px solid #444; border-radius:8px; padding:15px; cursor:pointer; transition:0.2s; color:#fff; }
+        .shop-item:hover { border-color:#9c27b0; transform:scale(1.03); }
+        .shop-item-name { font-weight:bold; font-size:18px; margin-bottom:5px; }
+        .shop-item-price { color:#9c27b0; font-weight:bold; }
+        .weapon-slot { position: fixed; right: 20px; bottom: 20px; display: flex; flex-direction: column; gap: 10px; z-index: 250; }
+        .weapon-slot-item { background: rgba(0,0,0,0.8); border: 2px solid #555; border-radius: 8px; padding: 10px; color: #fff; font-weight: bold; text-align: center; min-width: 100px; }
+        .weapon-slot-item.active { border-color: #9c27b0; box-shadow: 0 0 15px rgba(156,39,176,0.5); }
+        .weapon-slot-item .key { font-size: 14px; color: #9c27b0; }
+        .weapon-slot-item .name { font-size: 12px; }
+    </style>
 </head>
 <body>
-  <canvas id="gameCanvas"></canvas>
-  <div id="uiLayer" class="active">
-    <!-- Главное меню -->
-    <div id="menuScreen" class="screen visible">
-      <div class="logo">QULI<span>STRIKE</span>2</div>
-      <button class="btn accent" onclick="startGame()">▶ Играть</button>
-      <button class="btn" onclick="showScreen('inventoryScreen')">Инвентарь</button>
-      <button class="btn gold" onclick="showScreen('casesScreen')">Кейсы</button>
-      <button class="btn" onclick="showScreen('shopScreen')">Магазин</button>
-      <button class="btn" onclick="showScreen('settingsScreen')">Настройки</button>
-      <div id="profileBlock">
-        <div class="avatar">👤</div>
-        <div class="info">
-          <div class="nick" id="profileNick">PlayerOne</div>
-          <div class="level" id="profileLevel">Уровень 7</div>
-          <div class="balance" id="profileBalance">💰 500</div>
-          <div style="font-size:11px;color:#888;" id="profileSkins">Скинов: 0</div>
+    <canvas id="gameCanvas"></canvas>
+    <div id="uiLayer" class="active">
+        <div id="menuScreen" class="screen visible">
+            <div class="logo">QULI<span>STRIKE</span>2</div>
+            <button class="btn accent" onclick="startGame()">▶ Играть</button>
+            <button class="btn" onclick="showScreen('inventoryScreen')">Инвентарь</button>
+            <button class="btn gold" onclick="showScreen('casesScreen')">Кейсы</button>
+            <button class="btn" onclick="showScreen('shopScreen')">Магазин</button>
+            <button class="btn" onclick="showScreen('settingsScreen')">Настройки</button>
+            <div id="profileBlock">
+                <div class="avatar">👤</div>
+                <div class="info">
+                    <div class="nick" id="profileNick">PlayerOne</div>
+                    <div class="level" id="profileLevel">Уровень 7</div>
+                    <div class="balance" id="profileBalance">💰 500</div>
+                    <div style="font-size:11px;color:#888;" id="profileSkins">Скинов: 0</div>
+                </div>
+            </div>
         </div>
-      </div>
+        <div id="inventoryScreen" class="screen">
+            <button class="back-btn" onclick="showScreen('menuScreen')">← Назад</button>
+            <h2>🎒 ИНВЕНТАРЬ</h2>
+            <div class="card-grid" id="inventoryGrid"></div>
+        </div>
+        <div id="casesScreen" class="screen">
+            <button class="back-btn" onclick="showScreen('menuScreen')">← Назад</button>
+            <h2>📦 КЕЙСЫ</h2>
+            <div class="card-grid" id="casesGrid"></div>
+        </div>
+        <div id="shopScreen" class="screen">
+            <button class="back-btn" onclick="showScreen('menuScreen')">← Назад</button>
+            <h2>🛒 МАГАЗИН</h2>
+            <p style="color:#aaa;">Баланс: <span style="color:#ffd700;font-weight:700;" id="shopBalance">500</span> монет</p>
+            <button class="btn gold" onclick="addCoins()">+ Добавить 100 монет</button>
+        </div>
+        <div id="settingsScreen" class="screen">
+            <button class="back-btn" onclick="showScreen('menuScreen')">← Назад</button>
+            <h2>⚙️ НАСТРОЙКИ</h2>
+            <div class="settings-row">
+                <label>Чувствительность:</label>
+                <input type="range" min="0.1" max="3" step="0.1" value="0.5" id="sensSlider" oninput="mouseSensitivity=parseFloat(this.value)">
+            </div>
+            <button class="btn" onclick="resetProgress()">Сбросить прогресс</button>
+        </div>
     </div>
-    <!-- Инвентарь -->
-    <div id="inventoryScreen" class="screen">
-      <button class="back-btn" onclick="showScreen('menuScreen')">← Назад</button>
-      <h2>🎒 ИНВЕНТАРЬ</h2>
-      <div class="card-grid" id="inventoryGrid"></div>
+    <div id="rouletteOverlay">
+        <h2 style="color:#fff;">🎰 ОТКРЫТИЕ КЕЙСА</h2>
+        <div id="rouletteWindow"><div id="roulettePointer"></div><div id="rouletteStrip"></div></div>
+        <button class="btn accent" id="rouletteOpenBtn" onclick="startRoulette()">Открыть!</button>
+        <button class="btn" onclick="closeRoulette()">Закрыть</button>
     </div>
-    <!-- Кейсы -->
-    <div id="casesScreen" class="screen">
-      <button class="back-btn" onclick="showScreen('menuScreen')">← Назад</button>
-      <h2>📦 КЕЙСЫ</h2>
-      <div class="card-grid" id="casesGrid"></div>
+    <div id="winPopup"><h2 style="color:#ffd700;">🎉 ВЫИГРЫШ!</h2><p id="winItemName"></p><button class="btn gold" onclick="closeWinPopup()">Забрать</button></div>
+    <div id="hudOverlay">
+        <div class="hud-left"><div class="hud-money" id="hudMoney">$10000</div><div class="hud-stat"><span class="icon armor-icon">🛡️</span><span class="value" id="hudArmor">100</span></div><div class="hud-stat"><span class="icon health-icon">❤️</span><span class="value" id="hudHP">100</span></div></div>
+        <div class="hud-ammo"><span class="current" id="hudAmmoCurrent">30</span><span class="sep">|</span><span class="reserve" id="hudAmmoReserve">90</span></div>
+        <div class="hud-grenades"><div class="hud-grenade">💥</div><div class="hud-grenade">💨</div><div class="hud-grenade">💣</div><div class="hud-grenade">🔥</div></div>
     </div>
-    <!-- Магазин (монеты) -->
-    <div id="shopScreen" class="screen">
-      <button class="back-btn" onclick="showScreen('menuScreen')">← Назад</button>
-      <h2>🛒 МАГАЗИН</h2>
-      <p style="color:#aaa;">Баланс: <span style="color:#ffd700;font-weight:700;" id="shopBalance">500</span> монет</p>
-      <button class="btn gold" onclick="addCoins()">+ Добавить 100 монет</button>
+    <div id="crosshair"><div class="dot"></div></div>
+    <div id="killFeed"></div>
+    <div id="deathScreen"><h1>ВЫ ПОГИБЛИ</h1><p id="respawnTimer">5</p></div>
+    <div id="shopMenu" class="shop-menu"><div class="shop-panel"><h2>ПОКУПКА ОРУЖИЯ</h2><div class="shop-grid" id="shopGrid"></div></div></div>
+    <div class="weapon-slot" id="weaponSlots" style="display:none;">
+        <div class="weapon-slot-item active" data-slot="1"><div class="key">1</div><div class="name" id="slot1Name">AK-47</div></div>
+        <div class="weapon-slot-item" data-slot="2"><div class="key">2</div><div class="name" id="slot2Name">USP-S</div></div>
+        <div class="weapon-slot-item" data-slot="3"><div class="key">3</div><div class="name" id="slot3Name">Butterfly</div></div>
     </div>
-    <!-- Настройки -->
-    <div id="settingsScreen" class="screen">
-      <button class="back-btn" onclick="showScreen('menuScreen')">← Назад</button>
-      <h2>⚙️ НАСТРОЙКИ</h2>
-      <div class="settings-row">
-        <label>Чувствительность мыши:</label>
-        <input type="range" min="0.1" max="3" step="0.1" value="0.5" id="sensSlider" oninput="mouseSensitivity=parseFloat(this.value)">
-      </div>
-      <div class="settings-row">
-        <label>Никнейм:</label>
-        <input type="text" id="nicknameInput" maxlength="16" placeholder="Введите ник">
-        <button class="btn" onclick="changeNickname()">Сохранить</button>
-      </div>
-      <button class="btn" onclick="resetProgress()" style="margin-top:20px;">Сбросить прогресс</button>
-    </div>
-  </div>
 
-  <!-- Рулетка кейсов -->
-  <div id="rouletteOverlay">
-    <h2 style="color:#fff;letter-spacing:3px;">🎰 ОТКРЫТИЕ КЕЙСА</h2>
-    <div id="rouletteWindow">
-      <div id="roulettePointer"></div>
-      <div id="rouletteStrip"></div>
-    </div>
-    <button class="btn accent" id="rouletteOpenBtn" onclick="startRoulette()">Открыть!</button>
-    <button class="btn" onclick="closeRoulette()">Закрыть</button>
-  </div>
-  <div id="winPopup">
-    <h2 style="color:#ffd700;">🎉 ВЫИГРЫШ!</h2>
-    <p id="winItemName" style="font-size:18px;color:#fff;"></p>
-    <p id="winItemRarity" style="font-size:14px;"></p>
-    <button class="btn gold" onclick="closeWinPopup()">Забрать</button>
-  </div>
+    <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.module.js" } }</script>
+    <script type="module">
+        import * as THREE from 'three';
 
-  <!-- Игровой HUD (CS2 Style) -->
-  <div id="hudOverlay">
-    <div class="hud-left">
-      <div class="hud-money" id="hudMoney">$10000</div>
-      <div class="hud-stat">
-        <span class="icon armor-icon">🛡️</span>
-        <span class="value" id="hudArmor">100</span>
-      </div>
-      <div class="hud-stat">
-        <span class="icon health-icon">❤️</span>
-        <span class="value" id="hudHP">100</span>
-      </div>
-    </div>
-    <div class="hud-ammo" id="hudAmmoGroup">
-      <span class="current" id="hudAmmoCurrent">30</span>
-      <span class="sep">|</span>
-      <span class="reserve" id="hudAmmoReserve">90</span>
-    </div>
-    <div class="hud-grenades">
-      <div class="hud-grenade">💥</div>
-      <div class="hud-grenade">💨</div>
-      <div class="hud-grenade active">💣</div>
-      <div class="hud-grenade">🔥</div>
-    </div>
-  </div>
+        window.mouseSensitivity = 0.5;
+        let playerNickname = 'PlayerOne';
+        let gameState = 'menu';
+        let inventory = [], equippedSkins = {}, balance = 500, playerKills = 0, playerDeaths = 0;
+        let playerHP = 100, playerArmor = 100, playerAmmo = { current: 30, reserve: 90 }, currentWeapon = 'ak47';
+        let isReloading = false, fireCooldown = 0, respawnCountdown = 0, selectedCase = null, rouletteActive = false, rouletteItems = [], rouletteResult = null;
+        let roundMoney = 10000, shopOpen = false, mouseDown = false, weaponSlots = { 1: 'ak47', 2: 'usps', 3: 'butterfly' }, activeSlot = 1;
 
-  <!-- Прицел, киллфид, смерть, таблица -->
-  <div id="crosshair"><div class="dot"></div></div>
-  <div id="killFeed"></div>
-  <div id="hitMarker">✖</div>
-  <div id="deathScreen"><h1>ВЫ ПОГИБЛИ</h1><div class="respawning">Возрождение через <span id="respawnTimer">5</span> сек...</div></div>
-  <div id="scoreboard">
-    <h3>📊 ТАБЛИЦА СЧЁТА</h3>
-    <table>
-      <thead><tr><th>Игрок</th><th>Убийств</th><th>Смертей</th></tr></thead>
-      <tbody id="scoreboardBody"></tbody>
-    </table>
-  </div>
+        const weaponDefaults = {
+            ak47: { name: 'AK-47', damage: 28, fireRate: 0.1, magSize: 30, reserveAmmo: 90, recoil: 0.04, color: 0x8b4513, slot: 1 },
+            m4a4: { name: 'M4A4', damage: 25, fireRate: 0.09, magSize: 30, reserveAmmo: 90, recoil: 0.03, color: 0x556b2f, slot: 1 },
+            awp: { name: 'AWP', damage: 100, fireRate: 3.0, magSize: 5, reserveAmmo: 20, recoil: 0.15, color: 0x2f4f2f, slot: 1 },
+            usps: { name: 'USP-S', damage: 35, fireRate: 0.15, magSize: 12, reserveAmmo: 36, recoil: 0.05, color: 0x444444, slot: 2 },
+            knife: { name: 'Knife', damage: 100, fireRate: 0.3, magSize: 1, reserveAmmo: 0, recoil: 0, color: 0xc0c0c0, slot: 3 },
+            karambit: { name: 'Karambit', damage: 100, fireRate: 0.3, magSize: 1, reserveAmmo: 0, recoil: 0, color: 0xcccccc, slot: 3 },
+            butterfly: { name: 'Butterfly', damage: 100, fireRate: 0.3, magSize: 1, reserveAmmo: 0, recoil: 0, color: 0xdddddd, slot: 3 }
+        };
 
-  <!-- Магазин оружия -->
-  <div id="shopMenu" class="shop-menu">
-    <div class="shop-panel">
-      <h2 style="color:#fff;letter-spacing:2px;">ПОКУПКА ОРУЖИЯ</h2>
-      <div class="shop-grid" id="shopGrid"></div>
-    </div>
-  </div>
-  <div class="weapon-slot" id="weaponSlots">
-    <div class="weapon-slot-item active" data-slot="1"><div class="key">1</div><div class="name" id="slot1Name">AK-47</div></div>
-    <div class="weapon-slot-item" data-slot="2"><div class="key">2</div><div class="name" id="slot2Name">USP-S</div></div>
-    <div class="weapon-slot-item" data-slot="3"><div class="key">3</div><div class="name" id="slot3Name">Butterfly</div></div>
-  </div>
+        const canvas = document.getElementById('gameCanvas');
+        const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
 
-  <script type="importmap">
-    { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.module.js" } }
-  </script>
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x000000);
+        const camera = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.1, 200);
+        camera.position.set(0, 1.7, 5);
 
-  <script type="module">
-    import * as THREE from 'three';
+        const ambientLight = new THREE.AmbientLight(0xffeedd, 1.0);
+        scene.add(ambientLight);
+        const sunLight = new THREE.DirectionalLight(0xfff5e8, 3.5);
+        sunLight.position.set(30, 50, 20);
+        sunLight.castShadow = true;
+        scene.add(sunLight);
 
-    // ==================== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ====================
-    window.mouseSensitivity = 0.5;
-    let playerNickname = 'PlayerOne';
-    let gameState = 'menu';
-    let currentScreen = 'menuScreen';
-    let inventory = [];
-    let equippedSkins = {};
-    let balance = 500;
-    let playerKills = 0;
-    let playerDeaths = 0;
-    let playerHP = 100;
-    let playerArmor = 100;
-    let playerAmmo = { current: 30, reserve: 90 };
-    let currentWeapon = 'ak47';
-    let isReloading = false;
-    let reloadTimer = 0;
-    let fireCooldown = 0;
-    let respawnCountdown = 0;
-    let selectedCase = null;
-    let rouletteActive = false;
-    let rouletteItems = [];
-    let rouletteResult = null;
-    let scoreboardOpen = false;
-    let roundMoney = 10000;
-    let shopOpen = false;
-    let mouseDown = false;
-    let weaponSlots = { 1: 'ak47', 2: 'usps', 3: 'butterfly' };
-    let activeSlot = 1;
-
-    const weaponDefaults = {
-      ak47: { name: 'AK-47', damage: 28, fireRate: 0.1, magSize: 30, reserveAmmo: 90, recoil: 0.04, color: 0x8b4513, slot: 1 },
-      m4a4: { name: 'M4A4', damage: 25, fireRate: 0.09, magSize: 30, reserveAmmo: 90, recoil: 0.03, color: 0x556b2f, slot: 1 },
-      awp: { name: 'AWP', damage: 100, fireRate: 3.0, magSize: 5, reserveAmmo: 20, recoil: 0.15, color: 0x2f4f2f, slot: 1 },
-      usps: { name: 'USP-S', damage: 35, fireRate: 0.15, magSize: 12, reserveAmmo: 36, recoil: 0.05, color: 0x444444, slot: 2 },
-      knife: { name: 'Knife', damage: 100, fireRate: 0.3, magSize: 1, reserveAmmo: 0, recoil: 0, color: 0xc0c0c0, slot: 3 },
-      karambit: { name: 'Karambit', damage: 100, fireRate: 0.3, magSize: 1, reserveAmmo: 0, recoil: 0, color: 0xcccccc, slot: 3 },
-      butterfly: { name: 'Butterfly', damage: 100, fireRate: 0.3, magSize: 1, reserveAmmo: 0, recoil: 0, color: 0xdddddd, slot: 3 }
-    };
-
-    const shopItems = [
-      { name: 'AK-47', weapon: 'ak47', price: 2700, slot: 1 },
-      { name: 'M4A4', weapon: 'm4a4', price: 3100, slot: 1 },
-      { name: 'AWP', weapon: 'awp', price: 4750, slot: 1 },
-      { name: 'USP-S', weapon: 'usps', price: 200, slot: 2 },
-      { name: 'Броня', weapon: 'armor', price: 650, desc: 'Восстанавливает 100 ед. брони', slot: null },
-    ];
-
-    const canvas = document.getElementById('gameCanvas');
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.2;
-
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x000000);
-    scene.fog = new THREE.Fog(0xc8b89a, 40, 120);
-
-    const camera = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.1, 200);
-    camera.position.set(0, 1.7, 0);
-
-    const ambientLight = new THREE.AmbientLight(0xffeedd, 1.0);
-    scene.add(ambientLight);
-    const sunLight = new THREE.DirectionalLight(0xfff5e8, 3.5);
-    sunLight.position.set(30, 50, 20);
-    sunLight.castShadow = true;
-    sunLight.shadow.mapSize.width = 1024;
-    sunLight.shadow.mapSize.height = 1024;
-    sunLight.shadow.camera.near = 0.5;
-    sunLight.shadow.camera.far = 150;
-    sunLight.shadow.camera.left = -60;
-    sunLight.shadow.camera.right = 60;
-    sunLight.shadow.camera.top = 60;
-    sunLight.shadow.camera.bottom = -60;
-    sunLight.shadow.bias = -0.0005;
-    scene.add(sunLight);
-    scene.add(new THREE.HemisphereLight(0xffeedd, 0x8d6e4b, 0.8));
-
-    // ---------- КАРТА (Ancient) ----------
-    const mapObjects = [];
-    const collisionBoxes = [];
-    function createWall(x, z, w, h, d, color = 0xc4a882) {
-      const geo = new THREE.BoxGeometry(w, h, d);
-      const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.85, metalness: 0.05 });
-      const mesh = new THREE.Mesh(geo, mat);
-      mesh.position.set(x, h / 2, z);
-      mesh.castShadow = true; mesh.receiveShadow = true;
-      scene.add(mesh); mapObjects.push(mesh);
-      collisionBoxes.push({ minX: x - w / 2, maxX: x + w / 2, minZ: z - d / 2, maxZ: z + d / 2, y: h });
-      return mesh;
-    }
-    function createColumn(x, z, r = 0.5, h = 5, color = 0xb8956e) {
-      const geo = new THREE.CylinderGeometry(r, r, h, 12);
-      const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.7, metalness: 0.1 });
-      const mesh = new THREE.Mesh(geo, mat);
-      mesh.position.set(x, h / 2, z);
-      mesh.castShadow = true; mesh.receiveShadow = true;
-      scene.add(mesh); mapObjects.push(mesh);
-      collisionBoxes.push({ minX: x - r, maxX: x + r, minZ: z - r, maxZ: z + r, y: h });
-      return mesh;
-    }
-    function createBox(x, z, s = 1.5, color = 0x8b7355) {
-      const geo = new THREE.BoxGeometry(s, s, s);
-      const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.6, metalness: 0.1 });
-      const mesh = new THREE.Mesh(geo, mat);
-      mesh.position.set(x, s / 2, z);
-      mesh.castShadow = true; mesh.receiveShadow = true;
-      scene.add(mesh); mapObjects.push(mesh);
-      collisionBoxes.push({ minX: x - s / 2, maxX: x + s / 2, minZ: z - s / 2, maxZ: z + s / 2, y: s });
-      return mesh;
-    }
-    function createGround() {
-      const geo = new THREE.PlaneGeometry(80, 80);
-      const mat = new THREE.MeshStandardMaterial({ color: 0xd4b896, roughness: 0.9, metalness: 0 });
-      const ground = new THREE.Mesh(geo, mat);
-      ground.rotation.x = -Math.PI / 2; ground.position.y = 0;
-      ground.receiveShadow = true; scene.add(ground); mapObjects.push(ground);
-    }
-    function buildAncientMap() {
-      createGround();
-      createWall(0, -35, 70, 6, 1, 0xa08060); createWall(0, 35, 70, 6, 1, 0xa08060);
-      createWall(-35, 0, 1, 6, 70, 0xa08060); createWall(35, 0, 1, 6, 70, 0xa08060);
-      createWall(0, -8, 20, 4, 1.5, 0xb8956e); createWall(0, 8, 20, 4, 1.5, 0xb8956e);
-      createWall(-10, 0, 1.5, 4, 16, 0xb8956e); createWall(10, 0, 1.5, 4, 16, 0xb8956e);
-      createColumn(-8, -12, 0.6, 5); createColumn(8, -12, 0.6, 5);
-      createColumn(-8, 12, 0.6, 5); createColumn(8, 12, 0.6, 5);
-      createColumn(0, -18, 0.7, 5); createColumn(0, 18, 0.7, 5);
-      createWall(-22, -18, 8, 3, 2, 0x9b7b5b); createWall(-26, -14, 2, 3, 8, 0x9b7b5b);
-      createBox(-22, -20, 1.8, 0x7a5c3e); createBox(-18, -16, 1.5, 0x7a5c3e);
-      createWall(22, 18, 8, 3, 2, 0x9b7b5b); createWall(26, 14, 2, 3, 8, 0x9b7b5b);
-      createBox(22, 20, 1.8, 0x7a5c3e); createBox(18, 16, 1.5, 0x7a5c3e);
-      createBox(-5, -4, 1.5); createBox(5, -4, 1.5); createBox(-5, 4, 1.5); createBox(5, 4, 1.5);
-      createBox(-15, -2, 1.3); createBox(15, -2, 1.3); createBox(-15, 2, 1.3); createBox(15, 2, 1.3);
-      createBox(-10, -20, 1.6); createBox(10, 20, 1.6); createBox(0, -25, 1.4); createBox(0, 25, 1.4);
-    }
-    buildAncientMap();
-
-    // ---------- ОРУЖИЕ (от первого лица) ----------
-    const weaponGroup = new THREE.Group();
-    camera.add(weaponGroup);
-    weaponGroup.position.set(0.35, -0.3, -0.6);
-    scene.add(camera);
-    let weaponModel = null;
-
-    function updateWeaponModel() {
-      if (weaponModel) weaponGroup.remove(weaponModel);
-      const skin = equippedSkins[currentWeapon];
-      const color = skin ? parseInt(skin.color.slice(1), 16) : weaponDefaults[currentWeapon].color;
-      const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.4, metalness: 0.6 });
-      const dark = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.4, metalness: 0.8 });
-      const wood = new THREE.MeshStandardMaterial({ color: 0x5c3a1e, roughness: 0.8 });
-      const plastic = new THREE.MeshStandardMaterial({ color: 0x2a2a2a, roughness: 0.6 });
-      const group = new THREE.Group();
-      if (currentWeapon === 'ak47') {
-        group.add(new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.1, 0.35), mat)).position.set(0, 0.05, -0.1);
-        group.add(new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.06, 0.18), wood)).position.set(0, 0.02, -0.28);
-        group.add(new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.09, 0.28), wood)).position.set(0, 0.02, 0.18);
-        group.add(new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.018, 0.45, 8), dark)).rotation.x = Math.PI/2; group.children[3].position.set(0, 0.08, -0.4);
-      } else if (currentWeapon === 'm4a4') {
-        group.add(new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.1, 0.35), mat)).position.set(0, 0.05, -0.1);
-        group.add(new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.018, 0.4, 8), dark)).rotation.x = Math.PI/2; group.children[1].position.set(0, 0.08, -0.35);
-      } else if (currentWeapon === 'awp') {
-        group.add(new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.11, 0.6), mat)).position.set(0, 0.05, -0.2);
-        group.add(new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.022, 0.7, 8), dark)).rotation.x = Math.PI/2; group.children[1].position.set(0, 0.08, -0.6);
-      } else if (currentWeapon === 'usps') {
-        group.add(new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.06, 0.18), mat)).position.set(0, 0.05, -0.05);
-      } else if (currentWeapon === 'knife' || currentWeapon === 'karambit' || currentWeapon === 'butterfly') {
-        group.add(new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.22, 0.01), new THREE.MeshStandardMaterial({color:0xcccccc, roughness:0.2, metalness:0.9}))).position.set(0, 0.12, 0);
-      }
-      weaponModel = group;
-      weaponGroup.add(group);
-    }
-    updateWeaponModel();
-
-    // ---------- БОТЫ ----------
-    const bots = [];
-    const botGeom = new THREE.CapsuleGeometry(0.35, 1.3, 4, 8);
-    const botHeadGeom = new THREE.SphereGeometry(0.25, 8, 6);
-    function createBot(x, z, name) {
-      const botGroup = new THREE.Group();
-      botGroup.add(new THREE.Mesh(botGeom, new THREE.MeshStandardMaterial({ color: 0x5c3d2e, roughness: 0.7 }))).position.y = 1.0;
-      botGroup.add(new THREE.Mesh(botHeadGeom, new THREE.MeshStandardMaterial({ color: 0xe8c9a0, roughness: 0.5 }))).position.y = 1.85;
-      botGroup.position.set(x, 0, z);
-      scene.add(botGroup);
-      bots.push({ group: botGroup, name, hp: 100, alive: true, x, z, yaw: 0, state: 'patrol', fireTimer: 0, fireRate: 0.5, damage: 12 });
-    }
-    [[-20,-20],[20,20],[-15,15],[15,-15]].forEach((p,i) => createBot(p[0], p[1], 'Bot_'+(i+1)));
-
-    // ---------- ИГРОК ----------
-    const player = { x: 0, z: 5, y: 1.7, vy: 0, onGround: true, yaw: 0, pitch: 0, crouching: false, slowWalking: false };
-    const keys = {};
-    let mouseDX = 0, mouseDY = 0, pointerLocked = false;
-
-    function resolveCollision(nx, nz) {
-      const r = 0.4; let rx = nx, rz = nz;
-      for (const cb of collisionBoxes) {
-        if (rx+r > cb.minX && rx-r < cb.maxX && rz+r > cb.minZ && rz-r < cb.maxZ) {
-          const ox = Math.min(rx+r-cb.minX, cb.maxX-(rx-r)), oz = Math.min(rz+r-cb.minZ, cb.maxZ-(rz-r));
-          if (ox < oz) rx = (rx < (cb.minX+cb.maxX)/2) ? cb.minX-r : cb.maxX+r;
-          else rz = (rz < (cb.minZ+cb.maxZ)/2) ? cb.minZ-r : cb.maxZ+r;
+        const collisionBoxes = [];
+        function addWall(x, z, w, h, d) {
+            const geo = new THREE.BoxGeometry(w, h, d);
+            const mat = new THREE.MeshStandardMaterial({ color: 0xc4a882, roughness: 0.8 });
+            const mesh = new THREE.Mesh(geo, mat);
+            mesh.position.set(x, h/2, z);
+            mesh.receiveShadow = true;
+            scene.add(mesh);
+            collisionBoxes.push({ minX: x-w/2, maxX: x+w/2, minZ: z-d/2, maxZ: z+d/2 });
         }
-      }
-      return { x: rx, z: rz };
-    }
-
-    const raycaster = new THREE.Raycaster();
-    function shoot() {
-      if (fireCooldown > 0 || isReloading || gameState !== 'playing' || shopOpen) return;
-      const wd = weaponDefaults[currentWeapon];
-      if (playerAmmo.current <= 0) { reload(); return; }
-      fireCooldown = wd.fireRate;
-      playerAmmo.current--;
-      const dir = new THREE.Vector3(Math.sin(player.yaw)*Math.cos(player.pitch), -Math.sin(player.pitch), -Math.cos(player.yaw)*Math.cos(player.pitch)).normalize();
-      raycaster.set(new THREE.Vector3(player.x, player.y-0.3, player.z), dir);
-      const intersects = raycaster.intersectObjects(scene.children, true);
-      if (intersects.length > 0 && intersects[0].distance < 80) {
-        for (const bot of bots) {
-          if (!bot.alive) continue;
-          if (intersects[0].point.distanceTo(new THREE.Vector3(bot.x, 1.3, bot.z)) < 1.2) {
-            bot.hp -= wd.damage;
-            if (bot.hp <= 0) { bot.alive = false; bot.group.visible = false; playerKills++; addKillFeed(playerNickname, bot.name); }
-            break;
-          }
+        function addBox(x, z, s) {
+            const geo = new THREE.BoxGeometry(s, s, s);
+            const mat = new THREE.MeshStandardMaterial({ color: 0x8b7355, roughness: 0.6 });
+            const mesh = new THREE.Mesh(geo, mat);
+            mesh.position.set(x, s/2, z);
+            mesh.receiveShadow = true;
+            scene.add(mesh);
+            collisionBoxes.push({ minX: x-s/2, maxX: x+s/2, minZ: z-s/2, maxZ: z+s/2 });
         }
-      }
-      updateHUD();
-    }
+        // Карта Ancient (упрощённая, но рабочая)
+        addWall(0, -10, 20, 4, 1);
+        addWall(0, 10, 20, 4, 1);
+        addWall(-10, 0, 1, 4, 20);
+        addWall(10, 0, 1, 4, 20);
+        addBox(-5, -5, 2);
+        addBox(5, 5, 2);
+        const groundGeo = new THREE.PlaneGeometry(40, 40);
+        const ground = new THREE.Mesh(groundGeo, new THREE.MeshStandardMaterial({ color: 0xd4b896, roughness: 0.9 }));
+        ground.rotation.x = -Math.PI/2;
+        scene.add(ground);
 
-    function reload() {
-      if (isReloading || playerAmmo.current >= weaponDefaults[currentWeapon].magSize || playerAmmo.reserve <= 0) return;
-      isReloading = true;
-      setTimeout(() => {
-        const wd = weaponDefaults[currentWeapon];
-        const needed = wd.magSize - playerAmmo.current;
-        const avail = Math.min(needed, playerAmmo.reserve);
-        playerAmmo.current += avail;
-        playerAmmo.reserve -= avail;
-        isReloading = false;
-        updateHUD();
-      }, 2000);
-    }
+        // Оружие
+        const weaponGroup = new THREE.Group();
+        camera.add(weaponGroup);
+        weaponGroup.position.set(0.4, -0.3, -0.6);
+        let weaponModel = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.1, 0.4), new THREE.MeshStandardMaterial({ color: 0x8b4513 }));
+        weaponGroup.add(weaponModel);
 
-    function addKillFeed(killer, victim) {
-      const feed = document.getElementById('killFeed');
-      const entry = document.createElement('div');
-      entry.className = 'kill-entry';
-      entry.textContent = `${killer} ⚔ ${victim}`;
-      feed.appendChild(entry);
-      setTimeout(() => entry.remove(), 4000);
-    }
-
-    // ---------- HUD (CS2 STYLE) ----------
-    function updateHUD() {
-      document.getElementById('hudMoney').textContent = '$' + roundMoney;
-      document.getElementById('hudArmor').textContent = playerArmor;
-      document.getElementById('hudHP').textContent = playerHP;
-      document.getElementById('hudAmmoCurrent').textContent = playerAmmo.current;
-      document.getElementById('hudAmmoReserve').textContent = playerAmmo.reserve;
-    }
-
-    // ---------- ЭКРАНЫ ----------
-    function setBlackBackground() { scene.background = new THREE.Color(0x000000); }
-    function setGameBackground() { scene.background = new THREE.Color(0x87ceeb); }
-    setBlackBackground();
-
-    window.showScreen = function(screenId) {
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('visible'));
-      const screen = document.getElementById(screenId);
-      if (screen) screen.classList.add('visible');
-      if (screenId !== 'playing') setBlackBackground();
-      if (screenId === 'menuScreen') document.getElementById('uiLayer').classList.add('active');
-    };
-
-    function renderInventory() {
-      const grid = document.getElementById('inventoryGrid');
-      if (!inventory.length) { grid.innerHTML = '<p style="color:#888;">Инвентарь пуст.</p>'; return; }
-      grid.innerHTML = inventory.map((skin, idx) => {
-        const rc = skin.color;
-        const isEq = equippedSkins[skin.weaponType]?.id === skin.id;
-        return `<div class="skin-card${isEq?' equipped':''}" style="border-color:${rc};">
-          <div class="rarity-strip" style="background:${rc};"></div>
-          <div class="skin-name">${skin.name}</div>
-          <div class="weapon-name">${weaponDefaults[skin.weaponType].name}</div>
-          <div class="rarity-label" style="color:${rc};">${skin.rarity}</div>
-          <button class="equip-btn" onclick="window.equipSkin(${idx})">${isEq?'✔':'Экип'}</button>
-          <button class="sell-btn" onclick="window.sellSkin(${idx})">💰${skin.price||10}</button>
-        </div>`;
-      }).join('');
-    }
-    window.equipSkin = (idx) => { equippedSkins[inventory[idx].weaponType] = inventory[idx]; updateWeaponModel(); renderInventory(); };
-    window.sellSkin = (idx) => { balance += inventory[idx].price||10; inventory.splice(idx,1); renderInventory(); };
-
-    // ---------- КЕЙСЫ (3D + рулетка) ----------
-    const allSkins = [
-      { name: 'Basic', weaponType: 'ak47', rarity: 'Consumer', color: '#9e9e9e', weight: 32, price: 10 },
-      { name: 'Standard', weaponType: 'm4a4', rarity: 'Industrial', color: '#42a5f5', weight: 30, price: 20 },
-      { name: 'Silver', weaponType: 'ak47', rarity: 'Mil-Spec', color: '#1e88e5', weight: 25, price: 50 },
-      { name: 'Storm', weaponType: 'awp', rarity: 'Restricted', color: '#8e24aa', weight: 10, price: 150 },
-      { name: 'Neon Rider', weaponType: 'ak47', rarity: 'Classified', color: '#d81b60', weight: 2, price: 500 },
-      { name: 'Blood Moon', weaponType: 'usps', rarity: 'Covert', color: '#e53935', weight: 0.64, price: 1500 },
-      { name: 'Dragon', weaponType: 'ak47', rarity: 'Gold', color: '#ffd700', weight: 0.26, price: 5000 },
-    ];
-    const cases = [
-      { name: 'Emerald Case', price: 333, color: '#00c853', skins: allSkins },
-      { name: 'Neon Case', price: 199, color: '#ff4081', skins: allSkins },
-      { name: 'Elite Case', price: 777, color: '#ffd700', skins: allSkins },
-    ];
-
-    function renderCases() {
-      const grid = document.getElementById('casesGrid');
-      grid.innerHTML = cases.map((c, i) => `<div class="case-card" style="border-color:${c.color};">
-        <div class="case-name">${c.name}</div>
-        <div class="case-price">💰 ${c.price}</div>
-        <button class="btn gold" onclick="window.openCasePrompt(${i})">Открыть</button>
-      </div>`).join('');
-    }
-
-    window.openCasePrompt = (caseIndex) => {
-      if (balance < cases[caseIndex].price) { alert('Недостаточно монет!'); return; }
-      selectedCase = cases[caseIndex];
-      rouletteItems = [];
-      const pool = selectedCase.skins;
-      const totalWeight = pool.reduce((s,sk) => s+sk.weight, 0);
-      for (let i=0; i<200; i++) {
-        let r = Math.random()*totalWeight;
-        let picked = pool[0];
-        for (const sk of pool) { r -= sk.weight; if (r <= 0) { picked = sk; break; } }
-        rouletteItems.push(picked);
-      }
-      rouletteResult = rouletteItems[Math.floor(Math.random()*rouletteItems.length)];
-      const strip = document.getElementById('rouletteStrip');
-      strip.innerHTML = rouletteItems.map(s => `<div class="roulette-item" style="background:${s.color}33;border:2px solid ${s.color};">${s.name}</div>`).join('');
-      document.getElementById('rouletteOverlay').classList.add('active');
-    };
-
-    window.startRoulette = () => {
-      if (rouletteActive || !selectedCase) return;
-      balance -= selectedCase.price;
-      rouletteActive = true;
-      const strip = document.getElementById('rouletteStrip');
-      const itemWidth = 94;
-      const targetIndex = rouletteItems.indexOf(rouletteResult);
-      const targetOffset = -(targetIndex * itemWidth) + 250;
-      const duration = 2000;
-      const startTime = Date.now();
-      function animate() {
-        const progress = Math.min((Date.now()-startTime)/duration, 1);
-        strip.style.transform = `translateX(${targetOffset - (1-progress)*2000}px)`;
-        if (progress < 1) requestAnimationFrame(animate);
-        else {
-          strip.style.transform = `translateX(${targetOffset}px)`;
-          rouletteActive = false;
-          inventory.push({...rouletteResult, id:Date.now()});
-          renderInventory();
-          document.getElementById('rouletteOverlay').classList.remove('active');
+        // Боты
+        const bots = [];
+        for (let i=0; i<4; i++) {
+            const bot = new THREE.Group();
+            const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.35, 1.3), new THREE.MeshStandardMaterial({ color: 0x5c3d2e }));
+            body.position.y = 1.0;
+            bot.add(body);
+            bot.position.set(Math.random()*20-10, 0, Math.random()*20-10);
+            scene.add(bot);
+            bots.push({ group: bot, hp: 100, alive: true });
         }
-      }
-      animate();
-    };
 
-    // ---------- СТАРТ ИГРЫ ----------
-    window.startGame = () => {
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('visible'));
-      document.getElementById('uiLayer').classList.remove('active');
-      document.getElementById('hudOverlay').classList.add('visible');
-      document.getElementById('crosshair').classList.add('visible');
-      gameState = 'playing';
-      playerHP = 100; playerArmor = 100;
-      playerAmmo.current = weaponDefaults[currentWeapon].magSize;
-      playerAmmo.reserve = weaponDefaults[currentWeapon].reserveAmmo;
-      roundMoney = 10000;
-      setGameBackground();
-      updateHUD();
-      canvas.requestPointerLock();
-    };
+        const player = { x: 0, z: 5, y: 1.7, vy: 0, onGround: true, yaw: 0, pitch: 0 };
+        const keys = {};
+        let mouseDX = 0, mouseDY = 0, pointerLocked = false;
 
-    function exitToMenu() {
-      gameState = 'menu';
-      document.exitPointerLock();
-      pointerLocked = false;
-      document.getElementById('hudOverlay').classList.remove('visible');
-      document.getElementById('crosshair').classList.remove('visible');
-      document.getElementById('uiLayer').classList.add('active');
-      window.showScreen('menuScreen');
-      setBlackBackground();
-    }
+        function resolveCollision(nx, nz) {
+            const r = 0.4;
+            let rx = nx, rz = nz;
+            for (const cb of collisionBoxes) {
+                if (rx+r > cb.minX && rx-r < cb.maxX && rz+r > cb.minZ && rz-r < cb.maxZ) {
+                    const ox = Math.min(rx+r-cb.minX, cb.maxX-(rx-r));
+                    const oz = Math.min(rz+r-cb.minZ, cb.maxZ-(rz-r));
+                    if (ox < oz) rx = (rx < (cb.minX+cb.maxX)/2) ? cb.minX-r : cb.maxX+r;
+                    else rz = (rz < (cb.minZ+cb.maxZ)/2) ? cb.minZ-r : cb.maxZ+r;
+                }
+            }
+            return { x: rx, z: rz };
+        }
 
-    // ---------- УПРАВЛЕНИЕ ----------
-    document.addEventListener('keydown', (e) => {
-      keys[e.code] = true;
-      if (e.code === 'KeyR') reload();
-      if (e.code === 'Digit1') switchToSlot(1);
-      if (e.code === 'Digit2') switchToSlot(2);
-      if (e.code === 'Digit3') switchToSlot(3);
-      if (e.code === 'KeyB') toggleShop();
-      if (e.code === 'Escape') exitToMenu();
-    });
-    document.addEventListener('keyup', (e) => { keys[e.code] = false; });
-    document.addEventListener('mousemove', (e) => { if (pointerLocked) { mouseDX += e.movementX; mouseDY += e.movementY; } });
-    document.addEventListener('mousedown', () => { if (pointerLocked) mouseDown = true; });
-    document.addEventListener('mouseup', () => { mouseDown = false; });
-    canvas.addEventListener('click', () => { if (gameState==='playing' && !pointerLocked) canvas.requestPointerLock(); });
+        function shoot() {
+            if (fireCooldown > 0 || isReloading || gameState !== 'playing') return;
+            if (playerAmmo.current <= 0) { reload(); return; }
+            fireCooldown = weaponDefaults[currentWeapon].fireRate;
+            playerAmmo.current--;
+            const dir = new THREE.Vector3(Math.sin(player.yaw)*Math.cos(player.pitch), -Math.sin(player.pitch), -Math.cos(player.yaw)*Math.cos(player.pitch));
+            const raycaster = new THREE.Raycaster(new THREE.Vector3(player.x, player.y-0.3, player.z), dir, 0, 80);
+            const intersects = raycaster.intersectObjects(scene.children, true);
+            if (intersects.length > 0) {
+                for (const bot of bots) {
+                    if (!bot.alive) continue;
+                    if (intersects[0].point.distanceTo(bot.group.position) < 1.5) {
+                        bot.hp -= weaponDefaults[currentWeapon].damage;
+                        if (bot.hp <= 0) { bot.alive = false; bot.group.visible = false; playerKills++; }
+                        break;
+                    }
+                }
+            }
+            updateHUD();
+        }
 
-    function switchToSlot(slot) {
-      if (activeSlot === slot || !weaponSlots[slot]) return;
-      activeSlot = slot;
-      currentWeapon = weaponSlots[slot];
-      playerAmmo.current = weaponDefaults[currentWeapon].magSize;
-      playerAmmo.reserve = weaponDefaults[currentWeapon].reserveAmmo;
-      updateWeaponModel();
-      updateHUD();
-    }
+        function reload() {
+            if (isReloading || playerAmmo.current >= weaponDefaults[currentWeapon].magSize || playerAmmo.reserve <= 0) return;
+            isReloading = true;
+            setTimeout(() => {
+                const wd = weaponDefaults[currentWeapon];
+                const needed = wd.magSize - playerAmmo.current;
+                const avail = Math.min(needed, playerAmmo.reserve);
+                playerAmmo.current += avail;
+                playerAmmo.reserve -= avail;
+                isReloading = false;
+                updateHUD();
+            }, 2000);
+        }
 
-    function toggleShop() {
-      shopOpen = !shopOpen;
-      document.getElementById('shopMenu').classList.toggle('visible', shopOpen);
-      if (shopOpen) {
-        document.exitPointerLock();
-        document.getElementById('shopGrid').innerHTML = shopItems.map(item =>
-          `<div class="shop-item" onclick="buyItem('${item.weapon}')"><div>${item.name}</div><div>$${item.price}</div></div>`
-        ).join('');
-      } else {
-        canvas.requestPointerLock();
-      }
-    }
-    window.buyItem = (weapon) => {
-      const item = shopItems.find(i => i.weapon === weapon);
-      if (!item || roundMoney < item.price) return;
-      roundMoney -= item.price;
-      if (item.weapon === 'armor') playerArmor = 100;
-      else { weaponSlots[item.slot] = item.weapon; if (activeSlot === item.slot) { currentWeapon = item.weapon; updateWeaponModel(); } }
-      updateHUD();
-      toggleShop();
-    };
+        function updateHUD() {
+            document.getElementById('hudMoney').textContent = '$' + roundMoney;
+            document.getElementById('hudArmor').textContent = playerArmor;
+            document.getElementById('hudHP').textContent = playerHP;
+            document.getElementById('hudAmmoCurrent').textContent = playerAmmo.current;
+            document.getElementById('hudAmmoReserve').textContent = playerAmmo.reserve;
+        }
 
-    // ---------- ИГРОВОЙ ЦИКЛ ----------
-    function gameLoop() {
-      requestAnimationFrame(gameLoop);
-      if (gameState === 'playing') {
-        if (mouseDown && !shopOpen) shoot();
-        player.yaw -= mouseDX * 0.002;
-        player.pitch -= mouseDY * 0.002;
-        player.pitch = Math.max(-1, Math.min(1, player.pitch));
-        mouseDX = 0; mouseDY = 0;
-        camera.rotation.order = 'YXZ';
-        camera.rotation.y = player.yaw;
-        camera.rotation.x = player.pitch;
-        let speed = 6;
-        if (player.slowWalking) speed = 2.5;
-        if (player.crouching) speed *= 0.6;
-        const forward = new THREE.Vector3(); camera.getWorldDirection(forward);
-        forward.y = 0; forward.normalize();
-        const right = new THREE.Vector3().crossVectors(forward, camera.up).normalize();
-        let moveDir = new THREE.Vector3(0,0,0);
-        if (keys['KeyW']) moveDir.add(forward);
-        if (keys['KeyS']) moveDir.sub(forward);
-        if (keys['KeyA']) moveDir.sub(right);
-        if (keys['KeyD']) moveDir.add(right);
-        if (moveDir.length() > 0) moveDir.normalize();
-        const nx = player.x + moveDir.x * speed * 0.016;
-        const nz = player.z + moveDir.z * speed * 0.016;
-        const res = resolveCollision(nx, nz);
-        player.x = res.x; player.z = res.z;
-        camera.position.x = player.x;
-        camera.position.z = player.z;
-        camera.position.y = player.y;
-        bots.forEach(b => { if (b.alive) { b.yaw = Math.atan2(player.x-b.x, player.z-b.z); b.group.rotation.y = b.yaw; } });
-        updateHUD();
-      }
-      renderer.render(scene, camera);
-    }
-    gameLoop();
-  </script>
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('visible'));
+            const screen = document.getElementById(id);
+            if (screen) screen.classList.add('visible');
+            if (id === 'inventoryScreen') renderInventory();
+            if (id === 'casesScreen') renderCases();
+            scene.background = new THREE.Color(0x000000);
+        }
+        window.showScreen = showScreen;
+
+        function renderInventory() {
+            const grid = document.getElementById('inventoryGrid');
+            if (!inventory.length) { grid.innerHTML = '<p style="color:#888;">Инвентарь пуст.</p>'; return; }
+            grid.innerHTML = inventory.map((s, i) => `<div class="skin-card" style="border-color:${s.color};"><div>${s.name}</div><button class="equip-btn" onclick="window.equipSkin(${i})">Экип</button><button class="sell-btn" onclick="window.sellSkin(${i})">💰${s.price}</button></div>`).join('');
+        }
+        window.equipSkin = (i) => { equippedSkins[inventory[i].weaponType] = inventory[i]; renderInventory(); };
+        window.sellSkin = (i) => { balance += inventory[i].price; inventory.splice(i,1); renderInventory(); };
+
+        const allSkins = [
+            { name: 'Basic AK', weaponType: 'ak47', rarity: 'Consumer', color: '#9e9e9e', weight: 32, price: 10 },
+            { name: 'M4 Standard', weaponType: 'm4a4', rarity: 'Industrial', color: '#42a5f5', weight: 30, price: 20 },
+            { name: 'Silver AWP', weaponType: 'awp', rarity: 'Mil-Spec', color: '#1e88e5', weight: 25, price: 50 },
+            { name: 'Neon Rider', weaponType: 'ak47', rarity: 'Classified', color: '#d81b60', weight: 2, price: 500 },
+            { name: 'Dragon', weaponType: 'ak47', rarity: 'Gold', color: '#ffd700', weight: 0.26, price: 5000 },
+        ];
+        const cases = [
+            { name: 'Emerald Case', price: 333, color: '#00c853', skins: allSkins },
+            { name: 'Neon Case', price: 199, color: '#ff4081', skins: allSkins },
+        ];
+
+        function renderCases() {
+            document.getElementById('casesGrid').innerHTML = cases.map((c, i) => `<div class="case-card" style="border-color:${c.color};"><div class="case-name">${c.name}</div><div class="case-price">💰 ${c.price}</div><button class="btn gold" onclick="window.openCasePrompt(${i})">Открыть</button></div>`).join('');
+        }
+
+        window.openCasePrompt = (i) => {
+            if (balance < cases[i].price) { alert('Недостаточно монет!'); return; }
+            selectedCase = cases[i];
+            rouletteItems = [];
+            const pool = selectedCase.skins;
+            const totalWeight = pool.reduce((s, sk) => s + sk.weight, 0);
+            for (let j=0; j<200; j++) {
+                let r = Math.random()*totalWeight;
+                let picked = pool[0];
+                for (const sk of pool) { r -= sk.weight; if (r <= 0) { picked = sk; break; } }
+                rouletteItems.push(picked);
+            }
+            rouletteResult = rouletteItems[Math.floor(Math.random()*rouletteItems.length)];
+            document.getElementById('rouletteStrip').innerHTML = rouletteItems.map(s => `<div class="roulette-item" style="background:${s.color}33;border:2px solid ${s.color};">${s.name}</div>`).join('');
+            document.getElementById('rouletteOverlay').classList.add('active');
+        };
+
+        window.startRoulette = () => {
+            if (rouletteActive || !selectedCase) return;
+            balance -= selectedCase.price;
+            rouletteActive = true;
+            const strip = document.getElementById('rouletteStrip');
+            const itemWidth = 94;
+            const targetIndex = rouletteItems.indexOf(rouletteResult);
+            const targetOffset = -(targetIndex * itemWidth) + 250;
+            const startTime = Date.now();
+            function animate() {
+                const progress = Math.min((Date.now()-startTime)/2000, 1);
+                strip.style.transform = `translateX(${targetOffset - (1-progress)*2000}px)`;
+                if (progress < 1) requestAnimationFrame(animate);
+                else {
+                    inventory.push({ ...rouletteResult, id: Date.now() });
+                    renderInventory();
+                    document.getElementById('rouletteOverlay').classList.remove('active');
+                    rouletteActive = false;
+                }
+            }
+            animate();
+        };
+        window.closeRoulette = () => { document.getElementById('rouletteOverlay').classList.remove('active'); };
+        window.addCoins = () => { balance += 100; };
+        window.resetProgress = () => { localStorage.clear(); location.reload(); };
+
+        function startGame() {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('visible'));
+            document.getElementById('uiLayer').classList.remove('active');
+            document.getElementById('hudOverlay').classList.add('visible');
+            document.getElementById('crosshair').classList.add('visible');
+            document.getElementById('weaponSlots').style.display = 'flex';
+            gameState = 'playing';
+            playerHP = 100; playerArmor = 100;
+            playerAmmo.current = weaponDefaults[currentWeapon].magSize;
+            playerAmmo.reserve = weaponDefaults[currentWeapon].reserveAmmo;
+            roundMoney = 10000;
+            scene.background = new THREE.Color(0x87ceeb);
+            updateHUD();
+            canvas.requestPointerLock();
+        }
+        window.startGame = startGame;
+
+        function exitToMenu() {
+            gameState = 'menu';
+            document.exitPointerLock();
+            pointerLocked = false;
+            document.getElementById('hudOverlay').classList.remove('visible');
+            document.getElementById('crosshair').classList.remove('visible');
+            document.getElementById('weaponSlots').style.display = 'none';
+            document.getElementById('uiLayer').classList.add('active');
+            showScreen('menuScreen');
+        }
+
+        document.addEventListener('keydown', (e) => { keys[e.code] = true; if (e.code === 'KeyR') reload(); if (e.code === 'KeyB') toggleShop(); if (e.code === 'Escape') exitToMenu(); });
+        document.addEventListener('keyup', (e) => { keys[e.code] = false; });
+        document.addEventListener('mousemove', (e) => { if (pointerLocked) { mouseDX += e.movementX; mouseDY += e.movementY; } });
+        document.addEventListener('mousedown', () => { if (pointerLocked) mouseDown = true; });
+        document.addEventListener('mouseup', () => { mouseDown = false; });
+        canvas.addEventListener('click', () => { if (gameState === 'playing' && !pointerLocked) canvas.requestPointerLock(); });
+        document.addEventListener('pointerlockchange', () => { pointerLocked = document.pointerLockElement === canvas; });
+
+        function toggleShop() {
+            shopOpen = !shopOpen;
+            document.getElementById('shopMenu').classList.toggle('visible', shopOpen);
+            if (shopOpen) {
+                document.exitPointerLock();
+                document.getElementById('shopGrid').innerHTML = [
+                    { name: 'AK-47', weapon: 'ak47', price: 2700, slot: 1 },
+                    { name: 'M4A4', weapon: 'm4a4', price: 3100, slot: 1 },
+                    { name: 'USP-S', weapon: 'usps', price: 200, slot: 2 },
+                    { name: 'Броня', weapon: 'armor', price: 650 }
+                ].map(item => `<div class="shop-item" onclick="window.buyItem('${item.weapon}', ${item.price}, ${item.slot||0})"><div class="shop-item-name">${item.name}</div><div class="shop-item-price">$${item.price}</div></div>`).join('');
+            } else { canvas.requestPointerLock(); }
+        }
+        window.buyItem = (weapon, price, slot) => {
+            if (roundMoney < price) return;
+            roundMoney -= price;
+            if (weapon === 'armor') playerArmor = 100;
+            else if (slot) { weaponSlots[slot] = weapon; if (activeSlot === slot) currentWeapon = weapon; }
+            updateHUD();
+            toggleShop();
+        };
+
+        function gameLoop() {
+            requestAnimationFrame(gameLoop);
+            if (gameState === 'playing') {
+                if (mouseDown && !shopOpen) shoot();
+                player.yaw -= mouseDX * 0.002;
+                player.pitch -= mouseDY * 0.002;
+                player.pitch = Math.max(-1, Math.min(1, player.pitch));
+                mouseDX = 0; mouseDY = 0;
+                camera.rotation.order = 'YXZ';
+                camera.rotation.y = player.yaw;
+                camera.rotation.x = player.pitch;
+                let speed = 6;
+                const forward = new THREE.Vector3(); camera.getWorldDirection(forward);
+                forward.y = 0; forward.normalize();
+                const right = new THREE.Vector3().crossVectors(forward, camera.up).normalize();
+                let moveDir = new THREE.Vector3(0,0,0);
+                if (keys['KeyW']) moveDir.add(forward);
+                if (keys['KeyS']) moveDir.sub(forward);
+                if (keys['KeyA']) moveDir.sub(right);
+                if (keys['KeyD']) moveDir.add(right);
+                if (moveDir.length() > 0) moveDir.normalize();
+                const nx = player.x + moveDir.x * speed * 0.016;
+                const nz = player.z + moveDir.z * speed * 0.016;
+                const res = resolveCollision(nx, nz);
+                player.x = res.x; player.z = res.z;
+                camera.position.x = player.x;
+                camera.position.z = player.z;
+                camera.position.y = player.y;
+                if (fireCooldown > 0) fireCooldown -= 0.016;
+            }
+            renderer.render(scene, camera);
+        }
+        gameLoop();
+    </script>
 </body>
 </html>
