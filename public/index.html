@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+\<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -739,7 +739,134 @@
             { name: 'Elite Case', price: 777, icon: '👑', color: '#ffd700', skins: allSkins.filter(s => ['Restricted','Classified','Covert','Gold'].includes(s.rarity)) },
         ];
 
-        function renderCases() { const grid = document.getElementById('casesGrid'); grid.innerHTML = cases.map((c,i) => `<div class="case-card" style="border-color:${c.color};" onclick="openCasePrompt(${i})"><div class="case-icon" style="background:${c.color}22;">${c.icon}</div><div class="case-name">${c.name}</div><div class="case-price">💰 ${c.price} монет</div></div>`).join(''); }
+        // 3D-модели кейсов для меню
+        let caseModels = [];
+        function createCaseModel(caseData) {
+            const group = new THREE.Group();
+            // Основание ящика
+            const bodyGeo = new THREE.BoxGeometry(1.2, 0.8, 0.6);
+            const bodyMat = new THREE.MeshStandardMaterial({ color: 0x4a4a4a, roughness: 0.5, metalness: 0.7 });
+            const body = new THREE.Mesh(bodyGeo, bodyMat);
+            body.castShadow = true;
+            body.receiveShadow = true;
+            group.add(body);
+            // Крышка
+            const lidGeo = new THREE.BoxGeometry(1.2, 0.1, 0.6);
+            const lidMat = new THREE.MeshStandardMaterial({ color: 0x3a3a3a, roughness: 0.4, metalness: 0.8 });
+            const lid = new THREE.Mesh(lidGeo, lidMat);
+            lid.position.y = 0.45;
+            lid.castShadow = true;
+            group.add(lid);
+            // Замок
+            const lockGeo = new THREE.CylinderGeometry(0.1, 0.1, 0.15, 8);
+            const lockMat = new THREE.MeshStandardMaterial({ color: 0xcccccc, roughness: 0.3, metalness: 0.9 });
+            const lock = new THREE.Mesh(lockGeo, lockMat);
+            lock.position.set(0, 0.2, 0.31);
+            lock.castShadow = true;
+            group.add(lock);
+            // Ручка
+            const handleGeo = new THREE.TorusGeometry(0.1, 0.03, 8, 16);
+            const handleMat = new THREE.MeshStandardMaterial({ color: 0x888888, roughness: 0.3, metalness: 0.9 });
+            const handle = new THREE.Mesh(handleGeo, handleMat);
+            handle.position.set(0, 0.2, -0.31);
+            handle.rotation.x = Math.PI/2;
+            handle.castShadow = true;
+            group.add(handle);
+            // Полосы опасности (жёлтые полоски)
+            const stripeGeo = new THREE.BoxGeometry(0.1, 0.05, 0.61);
+            const stripeMat = new THREE.MeshStandardMaterial({ color: 0xffaa00, roughness: 0.6 });
+            const stripe1 = new THREE.Mesh(stripeGeo, stripeMat);
+            stripe1.position.set(-0.4, 0.3, 0);
+            group.add(stripe1);
+            const stripe2 = new THREE.Mesh(stripeGeo, stripeMat);
+            stripe2.position.set(0.4, 0.3, 0);
+            group.add(stripe2);
+            const stripe3 = new THREE.Mesh(stripeGeo, stripeMat);
+            stripe3.position.set(0, 0.3, 0);
+            group.add(stripe3);
+            // Текст "WEAPON CASE" (упрощённо, маленький прямоугольник как наклейка)
+            const labelGeo = new THREE.PlaneGeometry(0.5, 0.1);
+            const labelCanvas = document.createElement('canvas');
+            labelCanvas.width = 256;
+            labelCanvas.height = 64;
+            const ctx = labelCanvas.getContext('2d');
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, 256, 64);
+            ctx.fillStyle = '#000000';
+            ctx.font = 'bold 20px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('WEAPON CASE', 128, 40);
+            const labelTex = new THREE.CanvasTexture(labelCanvas);
+            const labelMat = new THREE.MeshBasicMaterial({ map: labelTex });
+            const label = new THREE.Mesh(labelGeo, labelMat);
+            label.position.set(0, 0.4, 0.31);
+            group.add(label);
+            group.name = caseData.name;
+            group.userData = { caseIndex: cases.indexOf(caseData) };
+            return group;
+        }
+
+        function renderCases() {
+            const grid = document.getElementById('casesGrid');
+            grid.innerHTML = '';
+            // Удаляем старые 3D-модели кейсов
+            caseModels.forEach(m => scene.remove(m));
+            caseModels = [];
+            // Создаём новые 3D-модели и добавляем их в сцену (невидимые, пока экран кейсов не активен)
+            cases.forEach((c, i) => {
+                const model = createCaseModel(c);
+                model.position.set(0, 0, 0);
+                model.visible = false;
+                scene.add(model);
+                caseModels.push(model);
+                // Добавляем карточку с информацией о кейсе
+                const card = document.createElement('div');
+                card.className = 'case-card';
+                card.style.borderColor = c.color;
+                card.innerHTML = `<div class="case-icon" style="background:${c.color}22;">${c.icon}</div>
+                    <div class="case-name">${c.name}</div>
+                    <div class="case-price">💰 ${c.price} монет</div>`;
+                card.onclick = () => openCasePrompt(i);
+                grid.appendChild(card);
+            });
+        }
+
+        // При открытии экрана кейсов показываем 3D-модели
+        const originalShowScreen = showScreen;
+        window.showScreen = function(screenId) {
+            originalShowScreen(screenId);
+            if (screenId === 'casesScreen') {
+                caseModels.forEach(m => m.visible = true);
+                // Размещаем модели перед камерой для обзора
+                caseModels.forEach((m, i) => {
+                    m.position.set((i - 1) * 2, 0, -2);
+                    m.rotation.set(0, 0, 0);
+                });
+                // Включаем анимацию вращения
+                if (!window.caseAnimationId) {
+                    window.caseAnimationId = requestAnimationFrame(animateCaseModels);
+                }
+            } else {
+                caseModels.forEach(m => m.visible = false);
+                if (window.caseAnimationId) {
+                    cancelAnimationFrame(window.caseAnimationId);
+                    window.caseAnimationId = null;
+                }
+            }
+        };
+
+        function animateCaseModels() {
+            if (currentScreen !== 'casesScreen') {
+                window.caseAnimationId = null;
+                return;
+            }
+            caseModels.forEach((m, i) => {
+                m.rotation.y += 0.01;
+                m.rotation.x += 0.005;
+                m.position.y = Math.sin(Date.now() * 0.002 + i) * 0.1;
+            });
+            window.caseAnimationId = requestAnimationFrame(animateCaseModels);
+        }
 
         window.openCasePrompt = function(caseIndex) {
             if (balance < cases[caseIndex].price) { alert('Недостаточно монет!'); return; }
@@ -754,13 +881,13 @@
         window.startRoulette = function() {
             if (rouletteActive) return; if (!selectedCase || balance < selectedCase.price) return;
             balance -= selectedCase.price; saveProgress(); updateProfileUI(); rouletteActive = true;
-            const strip = document.getElementById('rouletteStrip'); const itemWidth = 90 + 4; // min-width + gap
+            const strip = document.getElementById('rouletteStrip'); const itemWidth = 90 + 4;
             const totalItems = rouletteItems.length;
             const targetIndex = rouletteItems.indexOf(rouletteResult); const targetRawIndex = totalItems + targetIndex;
             const targetOffset = -(targetRawIndex * itemWidth) + (600/2 - itemWidth/2);
             const startOffset = parseFloat(strip.style.transform.replace('translateX(','').replace('px)','')) || 0;
             const totalScroll = targetOffset - startOffset - (totalItems * 2 * itemWidth);
-            const duration = 2000; // 2 секунды
+            const duration = 2000;
             const startTime = Date.now();
             document.getElementById('rouletteOpenBtn').disabled = true;
             function animate() {
