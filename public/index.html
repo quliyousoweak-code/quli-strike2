@@ -33,17 +33,18 @@
         #inventoryScreen, #casesScreen, #shopScreen, #settingsScreen { background:#0d0d0d; flex-direction:column; align-items:center; gap:16px; padding:40px; overflow-y:auto; }
         #inventoryScreen h2, #casesScreen h2, #shopScreen h2, #settingsScreen h2 { font-size:32px; letter-spacing:4px; color:#fff; margin-bottom:10px; }
         .card-grid { display:flex; flex-wrap:wrap; gap:14px; justify-content:center; max-width:1200px; }
-        .skin-card { width:160px; height:200px; background:#1a1a1a; border:2px solid #2a2a2a; border-radius:4px; display:flex; flex-direction:column; align-items:center; justify-content:space-between; padding:0; transition:all 0.2s; cursor:pointer; position:relative; overflow:hidden; box-shadow:0 4px 8px rgba(0,0,0,0.5); }
+        /* Увеличенные карточки */
+        .skin-card { width:200px; height:250px; background:#1a1a1a; border:2px solid #2a2a2a; border-radius:4px; display:flex; flex-direction:column; align-items:center; justify-content:space-between; padding:0; transition:all 0.2s; cursor:pointer; position:relative; overflow:hidden; box-shadow:0 4px 8px rgba(0,0,0,0.5); }
         .skin-card:hover { border-color:#fff; transform:translateY(-3px); box-shadow:0 8px 16px rgba(0,0,0,0.7); z-index:2; }
         .skin-card.equipped { border-color:#9c27b0 !important; box-shadow:0 0 12px rgba(156,39,176,0.4); }
-        .skin-card .item-preview { width:100%; height:110px; background:#2a2a2a; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; }
+        .skin-card .item-preview { width:100%; height:140px; background:#2a2a2a; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; }
         .skin-card .item-preview img { width:100%; height:100%; object-fit:contain; }
-        .skin-card .item-info { width:100%; padding:8px; display:flex; flex-direction:column; gap:4px; background:#141414; }
-        .skin-card .item-name { font-size:12px; font-weight:700; color:#ddd; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-        .skin-card .weapon-name { font-size:10px; color:#888; text-align:center; }
-        .skin-card .rarity-label { font-size:9px; letter-spacing:1px; text-transform:uppercase; font-weight:600; text-align:center; }
-        .skin-card .item-actions { display:flex; gap:4px; padding:6px; background:#0d0d0d; width:100%; justify-content:center; }
-        .equip-btn, .sell-btn, .open-btn { padding:4px 10px; font-size:10px; font-weight:700; border:none; background:#2a2a2a; color:#aaa; cursor:pointer; border-radius:2px; transition:all 0.2s; text-transform:uppercase; }
+        .skin-card .item-info { width:100%; padding:10px; display:flex; flex-direction:column; gap:6px; background:#141414; }
+        .skin-card .item-name { font-size:14px; font-weight:700; color:#ddd; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .skin-card .weapon-name { font-size:11px; color:#888; text-align:center; }
+        .skin-card .rarity-label { font-size:10px; letter-spacing:1px; text-transform:uppercase; font-weight:600; text-align:center; }
+        .skin-card .item-actions { display:flex; gap:4px; padding:8px; background:#0d0d0d; width:100%; justify-content:center; }
+        .equip-btn, .sell-btn, .open-btn { padding:5px 12px; font-size:11px; font-weight:700; border:none; background:#2a2a2a; color:#aaa; cursor:pointer; border-radius:2px; transition:all 0.2s; text-transform:uppercase; }
         .sell-btn { background:#3a1010; color:#ffaaaa; }
         .open-btn { background:#2a2a2a; color:#ffd700; }
         .equip-btn:hover, .open-btn:hover { background:#3a3a3a; color:#fff; }
@@ -61,6 +62,12 @@
         #roulettePointer { position:absolute; top:0; bottom:0; left:50%; width:3px; background:#ffd700; z-index:5; box-shadow:0 0 20px #ffd700; transform:translateX(-50%); }
         .roulette-item { min-width:90px; height:100px; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:10px; text-align:center; color:#fff; border-radius:4px; flex-shrink:0; }
         .roulette-item.win { border-color: #ffffff !important; box-shadow: 0 0 20px rgba(255,255,255,0.9); transform: scale(1.05); transition: 0.2s; }
+        /* Новый экран предпросмотра */
+        #itemPreviewOverlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); backdrop-filter:blur(8px); z-index:150; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px; pointer-events:none; opacity:0; transition:opacity 0.4s; }
+        #itemPreviewOverlay.active { opacity:1; pointer-events:all; }
+        #itemPreviewCanvas { width:500px; height:300px; background:#1a1a1a; border:2px solid #333; border-radius:8px; }
+        #itemPreviewOverlay .preview-title { color:#fff; font-size:24px; letter-spacing:3px; text-transform:uppercase; }
+        #itemPreviewOverlay .preview-rarity { font-size:16px; font-weight:bold; }
         #winPopup { position:fixed; top:50%; left:50%; transform:translate(-50%, -50%) scale(0); background:#1a1a1a; border:3px solid #ffd700; border-radius:20px; padding:30px; z-index:110; text-align:center; transition:transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow:0 0 60px rgba(255,215,0,0.5); }
         #winPopup.show { transform:translate(-50%, -50%) scale(1); }
         #hudOverlay { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); display:flex; gap:60px; align-items:flex-end; z-index:15; pointer-events:none; }
@@ -119,7 +126,7 @@
             <button class="btn accent" onclick="startGame()">▶ Играть</button>
             <button class="btn" onclick="showScreen('inventoryScreen')">Инвентарь</button>
             <button class="btn gold" onclick="showScreen('casesScreen')">Кейсы</button>
-            <button class="btn" onclick="showScreen('shopScreen')">Магазин</button>
+            <button class="btn" onclick="showScreen('shopScreen')">Маркет</button>
             <button class="btn" onclick="showScreen('settingsScreen')">Настройки</button>
             <div id="profileBlock">
                 <div class="avatar">👤</div>
@@ -143,7 +150,7 @@
         </div>
         <div id="shopScreen" class="screen">
             <button class="back-btn" onclick="showScreen('menuScreen')">← Назад</button>
-            <h2>🛒 МАГАЗИН</h2>
+            <h2>🛒 МАРКЕТ</h2>
             <p style="color:#aaa;">Баланс: <span style="color:#ffd700;font-weight:700;" id="shopBalance">500</span> монет</p>
             <button class="btn gold" onclick="addCoins()">+ Добавить 100 монет</button>
         </div>
@@ -170,6 +177,12 @@
         </div>
         <button class="btn accent" id="rouletteOpenBtn" onclick="startRoulette()">Открыть!</button>
         <button class="btn" onclick="closeRoulette()">Закрыть</button>
+    </div>
+    <div id="itemPreviewOverlay">
+        <h2 class="preview-title" id="previewName"></h2>
+        <p class="preview-rarity" id="previewRarity"></p>
+        <canvas id="itemPreviewCanvas" width="500" height="300"></canvas>
+        <button class="btn gold" onclick="claimPreviewItem()">Забрать</button>
     </div>
     <div id="winPopup">
         <h2 style="color:#ffd700;">🎉 ВЫИГРЫШ!</h2>
@@ -361,29 +374,94 @@
         let weaponModel = null;
         let leftHand = null, rightHand = null;
 
-        function createGloveTexture(baseColor = '#2d2d2d', accentColor = '#1a1a1a') {
+        // Улучшенная текстура перчаток (разные стили)
+        function createGloveTexture(skin = null) {
             const c = document.createElement('canvas');
             c.width = 512; c.height = 512;
             const ctx = c.getContext('2d');
+            const baseColor = skin?.color || '#2d2d2d';
+            const name = skin?.name || 'Default';
+
             ctx.fillStyle = baseColor;
             ctx.fillRect(0, 0, 512, 512);
-            for (let i = 0; i < 4000; i++) {
-                ctx.fillStyle = `rgba(0,0,0,${Math.random()*0.15})`;
-                ctx.fillRect(Math.random()*512, Math.random()*512, 1+Math.random()*2, 1+Math.random()*2);
+
+            if (name.includes('Crimson Weave')) {
+                ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3;
+                for (let i = 0; i < 15; i++) {
+                    ctx.beginPath(); ctx.moveTo(i * 40, 0); ctx.lineTo(i * 40, 512); ctx.stroke();
+                }
+                for (let i = 0; i < 15; i++) {
+                    ctx.beginPath(); ctx.moveTo(0, i * 40); ctx.lineTo(512, i * 40); ctx.stroke();
+                }
+            } else if (name.includes('King Snake')) {
+                ctx.fillStyle = '#f9a825';
+                for (let i = 0; i < 8; i++) {
+                    ctx.beginPath(); ctx.ellipse(128 + i * 60, 256, 80, 30, 0, 0, Math.PI * 2); ctx.fill();
+                }
+                ctx.fillStyle = '#000000';
+                for (let i = 0; i < 7; i++) {
+                    ctx.beginPath(); ctx.ellipse(158 + i * 60, 256, 60, 20, 0, 0, Math.PI * 2); ctx.fill();
+                }
+            } else if (name.includes('Pandora')) {
+                for (let x = 0; x < 512; x += 64) {
+                    for (let y = 0; y < 512; y += 64) {
+                        ctx.fillStyle = (Math.floor(x/64) + Math.floor(y/64)) % 2 === 0 ? '#6a1b9a' : '#9c4dff';
+                        ctx.fillRect(x, y, 64, 64);
+                    }
+                }
+            } else if (name.includes('Superconductor')) {
+                const grad = ctx.createLinearGradient(0, 0, 512, 512);
+                grad.addColorStop(0, '#1a237e'); grad.addColorStop(0.5, '#ff6f00'); grad.addColorStop(1, '#1a237e');
+                ctx.fillStyle = grad; ctx.fillRect(0, 0, 512, 512);
+            } else if (name.includes('Hedge Maze')) {
+                ctx.fillStyle = '#4caf50'; ctx.fillRect(0, 0, 512, 512);
+                ctx.fillStyle = '#2e7d32';
+                for (let i = 0; i < 40; i++) {
+                    ctx.beginPath(); ctx.arc(Math.random() * 512, Math.random() * 512, 20 + Math.random() * 40, 0, Math.PI * 2); ctx.fill();
+                }
+            } else if (name.includes('Spearmint')) {
+                for (let x = 0; x < 512; x += 32) {
+                    for (let y = 0; y < 512; y += 32) {
+                        ctx.fillStyle = (Math.floor(x/32) + Math.floor(y/32)) % 2 === 0 ? '#00e676' : '#00c853';
+                        ctx.fillRect(x, y, 32, 32);
+                    }
+                }
+            } else if (name.includes('Vice')) {
+                const grad = ctx.createLinearGradient(0, 0, 512, 0);
+                grad.addColorStop(0, '#ff4081'); grad.addColorStop(1, '#00b0ff');
+                ctx.fillStyle = grad; ctx.fillRect(0, 0, 512, 512);
+            } else if (name.includes('Arctic')) {
+                const grad = ctx.createRadialGradient(256, 256, 10, 256, 256, 300);
+                grad.addColorStop(0, '#ffffff'); grad.addColorStop(1, '#42a5f5');
+                ctx.fillStyle = grad; ctx.fillRect(0, 0, 512, 512);
+            } else if (name.includes('Amphibious')) {
+                const grad = ctx.createLinearGradient(0, 0, 0, 512);
+                grad.addColorStop(0, '#00695c'); grad.addColorStop(1, '#1e88e5');
+                ctx.fillStyle = grad; ctx.fillRect(0, 0, 512, 512);
+            } else if (name.includes('Nocts')) {
+                ctx.fillStyle = '#000000'; ctx.fillRect(0, 0, 512, 512);
+                ctx.fillStyle = '#333333';
+                for (let i = 0; i < 20; i++) { ctx.fillRect(i * 25, 0, 12, 512); }
+            } else {
+                // Стандартная тактическая текстура
+                for (let i = 0; i < 4000; i++) {
+                    ctx.fillStyle = `rgba(0,0,0,${Math.random()*0.15})`;
+                    ctx.fillRect(Math.random()*512, Math.random()*512, 1+Math.random()*2, 1+Math.random()*2);
+                }
+                ctx.fillStyle = '#1a1a1a';
+                ctx.beginPath(); ctx.arc(80, 120, 40, 0, Math.PI*2); ctx.fill();
+                ctx.beginPath(); ctx.arc(160, 100, 40, 0, Math.PI*2); ctx.fill();
+                ctx.beginPath(); ctx.arc(240, 110, 40, 0, Math.PI*2); ctx.fill();
+                ctx.beginPath(); ctx.arc(320, 120, 40, 0, Math.PI*2); ctx.fill();
+                ctx.beginPath(); ctx.arc(400, 140, 40, 0, Math.PI*2); ctx.fill();
+                ctx.strokeStyle = '#cccccc'; ctx.lineWidth = 2;
+                for (let i = 0; i < 6; i++) {
+                    ctx.beginPath(); ctx.moveTo(30, 200 + i*50); ctx.lineTo(482, 200 + i*50); ctx.stroke();
+                }
+                ctx.fillStyle = '#111111'; ctx.fillRect(100, 350, 300, 80);
+                ctx.fillStyle = '#333333';
+                for (let i=0;i<5;i++) ctx.fillRect(110 + i*55, 360, 30, 60);
             }
-            ctx.fillStyle = accentColor;
-            ctx.beginPath(); ctx.arc(80, 120, 40, 0, Math.PI*2); ctx.fill();
-            ctx.beginPath(); ctx.arc(160, 100, 40, 0, Math.PI*2); ctx.fill();
-            ctx.beginPath(); ctx.arc(240, 110, 40, 0, Math.PI*2); ctx.fill();
-            ctx.beginPath(); ctx.arc(320, 120, 40, 0, Math.PI*2); ctx.fill();
-            ctx.beginPath(); ctx.arc(400, 140, 40, 0, Math.PI*2); ctx.fill();
-            ctx.strokeStyle = '#cccccc'; ctx.lineWidth = 2;
-            for (let i = 0; i < 6; i++) {
-                ctx.beginPath(); ctx.moveTo(30, 200 + i*50); ctx.lineTo(482, 200 + i*50); ctx.stroke();
-            }
-            ctx.fillStyle = '#111111'; ctx.fillRect(100, 350, 300, 80);
-            ctx.fillStyle = '#333333';
-            for (let i=0;i<5;i++) ctx.fillRect(110 + i*55, 360, 30, 60);
             ctx.fillStyle = '#ffffff'; ctx.font = 'bold 20px Arial'; ctx.textAlign = 'center';
             ctx.fillText('OPERATOR', 256, 460);
             return new THREE.CanvasTexture(c);
@@ -391,8 +469,7 @@
 
         function createGloveHand(side, skin = null) {
             const group = new THREE.Group();
-            const baseColor = skin?.color || '#2d2d2d';
-            const gloveTex = createGloveTexture(baseColor, '#1a1a1a');
+            const gloveTex = createGloveTexture(skin);
             const gloveMat = new THREE.MeshStandardMaterial({ map: gloveTex, roughness: 0.6, metalness: 0.3 });
             const darkMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.4, metalness: 0.8 });
             const palm = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.14, 0.08), gloveMat);
@@ -812,125 +889,47 @@
             return 0.5;
         }
 
-        // Улучшенная 3D-модель кейса (как в CS2)
+        // 3D-модель кейса
         function createCaseModel(caseData, container) {
             const w = container.clientWidth || 160;
             const h = container.clientHeight || 160;
-            const scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x0a0a0a);
+            const scene = new THREE.Scene(); scene.background = new THREE.Color(0x0a0a0a);
             const cam = new THREE.PerspectiveCamera(45, w/h, 0.1, 10);
-            cam.position.set(2, 1.5, 2.5);
-            cam.lookAt(0, 0, 0);
+            cam.position.set(2, 1.5, 2.5); cam.lookAt(0,0,0);
             const renderer3d = new THREE.WebGLRenderer({ antialias: true });
             renderer3d.setSize(w, h);
             container.appendChild(renderer3d.domElement);
-
-            // Освещение для бликов
-            const light1 = new THREE.DirectionalLight(0xffffff, 1.5);
-            light1.position.set(2, 3, 2);
-            scene.add(light1);
-            const light2 = new THREE.DirectionalLight(0xccccff, 0.8);
-            light2.position.set(-2, 1, -1);
-            scene.add(light2);
+            const light1 = new THREE.DirectionalLight(0xffffff, 1.5); light1.position.set(2,3,2); scene.add(light1);
+            const light2 = new THREE.DirectionalLight(0xccccff, 0.8); light2.position.set(-2,1,-1); scene.add(light2);
             scene.add(new THREE.AmbientLight(0x404040, 1.2));
-
-            // Текстура с логотипом и надписями
-            const texCanvas = document.createElement('canvas');
-            texCanvas.width = 512; texCanvas.height = 512;
+            const texCanvas = document.createElement('canvas'); texCanvas.width=512; texCanvas.height=512;
             const ctx = texCanvas.getContext('2d');
-            // Металлическая основа с градиентом
-            const grad = ctx.createLinearGradient(0, 0, 512, 512);
-            grad.addColorStop(0, '#555555');
-            grad.addColorStop(0.5, '#888888');
-            grad.addColorStop(1, '#444444');
-            ctx.fillStyle = grad;
-            ctx.fillRect(0, 0, 512, 512);
-            // Царапины и потёртости
-            for (let i = 0; i < 200; i++) {
-                ctx.strokeStyle = `rgba(0,0,0,${Math.random()*0.3})`;
-                ctx.lineWidth = Math.random()*2;
-                ctx.beginPath();
-                ctx.moveTo(Math.random()*512, Math.random()*512);
-                ctx.lineTo(Math.random()*512, Math.random()*512);
-                ctx.stroke();
-            }
-            // Полосы опасности
-            ctx.fillStyle = '#ffaa00';
-            ctx.fillRect(0, 420, 512, 20);
-            ctx.fillStyle = '#000000';
-            ctx.fillRect(0, 425, 512, 10);
-            // Логотип CS2
-            ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 36px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText('WEAPON CASE', 256, 180);
-            ctx.font = 'italic bold 28px Arial';
-            ctx.fillText('QULI STRIKE', 256, 230);
-            ctx.fillStyle = '#cccccc';
-            ctx.font = '16px monospace';
-            ctx.fillText('S/N: QS2-7741-ALPHA', 256, 340);
-            // Ручки и замок
-            ctx.fillStyle = '#666666';
-            ctx.fillRect(50, 440, 100, 30);
-            ctx.fillRect(362, 440, 100, 30);
-            ctx.fillStyle = '#222222';
-            ctx.fillRect(60, 445, 80, 20);
-            ctx.fillRect(372, 445, 80, 20);
+            const grad = ctx.createLinearGradient(0,0,512,512); grad.addColorStop(0,'#555555'); grad.addColorStop(0.5,'#888888'); grad.addColorStop(1,'#444444');
+            ctx.fillStyle = grad; ctx.fillRect(0,0,512,512);
+            for (let i=0;i<200;i++) { ctx.strokeStyle=`rgba(0,0,0,${Math.random()*0.3})`; ctx.lineWidth=Math.random()*2; ctx.beginPath(); ctx.moveTo(Math.random()*512,Math.random()*512); ctx.lineTo(Math.random()*512,Math.random()*512); ctx.stroke(); }
+            ctx.fillStyle = '#ffaa00'; ctx.fillRect(0,420,512,20); ctx.fillStyle = '#000000'; ctx.fillRect(0,425,512,10);
+            ctx.fillStyle = '#ffffff'; ctx.font='bold 36px Arial'; ctx.textAlign='center'; ctx.fillText('WEAPON CASE',256,180);
+            ctx.font='italic bold 28px Arial'; ctx.fillText('QULI STRIKE',256,230);
+            ctx.fillStyle = '#cccccc'; ctx.font='16px monospace'; ctx.fillText('S/N: QS2-7741-ALPHA',256,340);
+            ctx.fillStyle = '#666666'; ctx.fillRect(50,440,100,30); ctx.fillRect(362,440,100,30);
+            ctx.fillStyle = '#222222'; ctx.fillRect(60,445,80,20); ctx.fillRect(372,445,80,20);
             const caseTexture = new THREE.CanvasTexture(texCanvas);
-
-            // Материал с высоким metalness для бликов
-            const bodyMat = new THREE.MeshStandardMaterial({ map: caseTexture, roughness: 0.3, metalness: 0.95 });
-            const accentMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.2, metalness: 0.9 });
-            const emissiveMat = new THREE.MeshStandardMaterial({ color: caseData.color, roughness: 0.2, metalness: 0.8, emissive: caseData.color, emissiveIntensity: 0.4 });
-
+            const bodyMat = new THREE.MeshStandardMaterial({ map: caseTexture, roughness:0.3, metalness:0.95 });
+            const accentMat = new THREE.MeshStandardMaterial({ color:0x111111, roughness:0.2, metalness:0.9 });
+            const emissiveMat = new THREE.MeshStandardMaterial({ color: caseData.color, roughness:0.2, metalness:0.8, emissive: caseData.color, emissiveIntensity:0.4 });
             const group = new THREE.Group();
-
-            // Основное тело с фасками (используем BoxGeometry с небольшой детализацией)
-            const body = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.6, 0.4), bodyMat);
-            group.add(body);
-
-            // Уголки
-            const cornerGeo = new THREE.BoxGeometry(0.15, 0.15, 0.1);
-            const corners = [
-                [0.375, 0.225, 0.15], [0.375, -0.225, 0.15], [-0.375, 0.225, 0.15], [-0.375, -0.225, 0.15],
-                [0.375, 0.225, -0.15], [0.375, -0.225, -0.15], [-0.375, 0.225, -0.15], [-0.375, -0.225, -0.15]
-            ];
-            corners.forEach(pos => {
-                const corner = new THREE.Mesh(cornerGeo, accentMat);
-                corner.position.set(...pos);
-                group.add(corner);
-            });
-
-            // Замок с эмиссией
-            const lock = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.1, 0.08), emissiveMat);
-            lock.position.set(0, -0.25, 0.22);
-            group.add(lock);
-            const keyhole = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.02, 8), new THREE.MeshStandardMaterial({ color: 0x000000, roughness: 0.1, metalness: 0.5 }));
-            keyhole.rotation.x = Math.PI/2;
-            keyhole.position.set(0, -0.25, 0.26);
-            group.add(keyhole);
-
-            // Ручки
-            const handleGeo = new THREE.TorusGeometry(0.06, 0.02, 8, 16);
-            const handle1 = new THREE.Mesh(handleGeo, accentMat);
-            handle1.position.set(0.5, 0, 0.15);
-            handle1.rotation.y = Math.PI/2;
-            group.add(handle1);
-            const handle2 = new THREE.Mesh(handleGeo, accentMat);
-            handle2.position.set(-0.5, 0, 0.15);
-            handle2.rotation.y = Math.PI/2;
-            group.add(handle2);
-
-            // Светящаяся полоса
-            const stripeGeo = new THREE.BoxGeometry(0.05, 0.6, 0.41);
-            const stripeMat = new THREE.MeshStandardMaterial({ color: caseData.color, roughness: 0.1, metalness: 0.3, emissive: caseData.color, emissiveIntensity: 0.7 });
-            const stripe1 = new THREE.Mesh(stripeGeo, stripeMat);
-            stripe1.position.set(0.15, 0, 0);
-            group.add(stripe1);
-            const stripe2 = new THREE.Mesh(stripeGeo, stripeMat);
-            stripe2.position.set(-0.15, 0, 0);
-            group.add(stripe2);
-
+            const body = new THREE.Mesh(new THREE.BoxGeometry(0.8,0.6,0.4), bodyMat); group.add(body);
+            const cornerGeo = new THREE.BoxGeometry(0.15,0.15,0.1);
+            [[0.375,0.225,0.15],[0.375,-0.225,0.15],[-0.375,0.225,0.15],[-0.375,-0.225,0.15],[0.375,0.225,-0.15],[0.375,-0.225,-0.15],[-0.375,0.225,-0.15],[-0.375,-0.225,-0.15]].forEach(pos => { const c=new THREE.Mesh(cornerGeo,accentMat); c.position.set(...pos); group.add(c); });
+            const lock = new THREE.Mesh(new THREE.BoxGeometry(0.2,0.1,0.08), emissiveMat); lock.position.set(0,-0.25,0.22); group.add(lock);
+            const keyhole = new THREE.Mesh(new THREE.CylinderGeometry(0.02,0.02,0.02,8), new THREE.MeshStandardMaterial({color:0x000000,roughness:0.1,metalness:0.5})); keyhole.rotation.x=Math.PI/2; keyhole.position.set(0,-0.25,0.26); group.add(keyhole);
+            const handleGeo = new THREE.TorusGeometry(0.06,0.02,8,16);
+            const handle1 = new THREE.Mesh(handleGeo, accentMat); handle1.position.set(0.5,0,0.15); handle1.rotation.y=Math.PI/2; group.add(handle1);
+            const handle2 = new THREE.Mesh(handleGeo, accentMat); handle2.position.set(-0.5,0,0.15); handle2.rotation.y=Math.PI/2; group.add(handle2);
+            const stripeGeo = new THREE.BoxGeometry(0.05,0.6,0.41);
+            const stripeMat = new THREE.MeshStandardMaterial({ color: caseData.color, roughness:0.1, metalness:0.3, emissive: caseData.color, emissiveIntensity:0.7 });
+            const stripe1 = new THREE.Mesh(stripeGeo, stripeMat); stripe1.position.set(0.15,0,0); group.add(stripe1);
+            const stripe2 = new THREE.Mesh(stripeGeo, stripeMat); stripe2.position.set(-0.15,0,0); group.add(stripe2);
             scene.add(group);
             return { scene, cam, renderer3d, group };
         }
@@ -1056,45 +1055,113 @@
                     if (items[targetRawIndex]) items[targetRawIndex].classList.add('win');
                     rouletteActive = false;
                     document.getElementById('rouletteOpenBtn').disabled = false;
-                    showWinPopup(rouletteResult);
+                    showItemPreview(rouletteResult);
                 }
             }
             animate();
         };
 
-        function showWinPopup(skin) {
-            const popup = document.getElementById('winPopup');
-            document.getElementById('winItemName').textContent = skin.name + (skin.weaponType ? ` (${weaponDefaults[skin.weaponType]?.name})` : ' (Перчатки)');
-            document.getElementById('winItemRarity').textContent = skin.rarity;
-            document.getElementById('winItemRarity').style.color = skin.color;
-            if (['Restricted','Classified','Covert','Gold'].includes(skin.rarity)) {
-                popup.style.borderColor = skin.color;
-                popup.style.boxShadow = `0 0 60px ${skin.color}`;
-            } else {
-                popup.style.borderColor = '#ffd700';
-                popup.style.boxShadow = '0 0 60px rgba(255,215,0,0.5)';
-            }
-            popup.classList.add('show');
+        // НОВАЯ ФУНКЦИЯ ПРЕДПРОСМОТРА
+        let pendingPreviewItem = null;
+        let previewScene, previewCam, previewRenderer, previewModel;
 
-            const newItem = { ...skin, id: Date.now() + Math.random(), priceMultiplier: getPriceMultiplier(selectedCase.price) };
+        function showItemPreview(skin) {
+            pendingPreviewItem = {
+                skin: skin,
+                caseIndex: cases.indexOf(selectedCase)
+            };
+            document.getElementById('rouletteOverlay').classList.remove('active');
+            document.getElementById('itemPreviewOverlay').classList.add('active');
+            document.getElementById('previewName').textContent = skin.name + (skin.weaponType ? ` (${weaponDefaults[skin.weaponType]?.name})` : ' (Перчатки)');
+            document.getElementById('previewRarity').textContent = skin.rarity;
+            document.getElementById('previewRarity').style.color = skin.color || '#fff';
+            renderItemPreview(skin);
+        }
+
+        function renderItemPreview(skin) {
+            const canvas = document.getElementById('itemPreviewCanvas');
+            canvas.width = 500; canvas.height = 300;
+            if (!previewScene) {
+                previewScene = new THREE.Scene();
+                previewScene.background = new THREE.Color(0x1a1a1a);
+                previewCam = new THREE.PerspectiveCamera(45, 500/300, 0.1, 10);
+                previewCam.position.set(0, 0.5, 2);
+                previewCam.lookAt(0, 0, 0);
+                previewRenderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+                previewRenderer.setSize(500, 300);
+                previewScene.add(new THREE.AmbientLight(0x404040, 1.5));
+                const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
+                dirLight.position.set(1, 1, 1);
+                previewScene.add(dirLight);
+                const backLight = new THREE.DirectionalLight(0xccccff, 0.6);
+                backLight.position.set(-1, -1, -1);
+                previewScene.add(backLight);
+            }
+            if (previewModel) previewScene.remove(previewModel);
+            const group = new THREE.Group();
+            if (skin.weaponType) {
+                const weaponType = skin.weaponType;
+                const weaponColor = skin.color || weaponDefaults[weaponType]?.color || 0x888888;
+                const mat = new THREE.MeshStandardMaterial({ color: new THREE.Color(weaponColor), roughness: 0.4, metalness: 0.6 });
+                const body = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.15, 0.6), mat);
+                group.add(body);
+                const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.5, 8), new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.2, metalness: 0.9 }));
+                barrel.rotation.x = Math.PI/2;
+                barrel.position.set(0, 0.05, -0.55);
+                group.add(barrel);
+                if (weaponType === 'awp') {
+                    const scope = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.2, 8), new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.3, metalness: 0.8 }));
+                    scope.position.set(0, 0.2, -0.25);
+                    group.add(scope);
+                }
+            } else {
+                const leftGlove = createGloveHand('left', skin);
+                leftGlove.position.set(-0.2, -0.1, 0);
+                group.add(leftGlove);
+                const rightGlove = createGloveHand('right', skin);
+                rightGlove.position.set(0.2, -0.1, 0);
+                group.add(rightGlove);
+            }
+            previewModel = group;
+            previewScene.add(group);
+            function animatePreview() {
+                if (!previewScene || !document.getElementById('itemPreviewOverlay').classList.contains('active')) return;
+                previewModel.rotation.y += 0.01;
+                previewRenderer.render(previewScene, previewCam);
+                requestAnimationFrame(animatePreview);
+            }
+            animatePreview();
+        }
+
+        function stopItemPreview() {
+            if (previewModel) {
+                previewScene.remove(previewModel);
+                previewModel = null;
+            }
+        }
+
+        window.claimPreviewItem = function() {
+            if (!pendingPreviewItem) return;
+            const { skin, caseIndex } = pendingPreviewItem;
+            const newItem = { ...skin, id: Date.now() + Math.random(), priceMultiplier: getPriceMultiplier(selectedCase?.price || 0) };
             if (!newItem.type) newItem.type = skin.weaponType ? 'weapon' : 'gloves';
             inventory.push(newItem);
-
-            const caseIdx = inventory.findIndex(item => item.type === 'case' && item.caseIndex === cases.indexOf(selectedCase));
+            const caseIdx = inventory.findIndex(item => item.type === 'case' && item.caseIndex === caseIndex);
             if (caseIdx !== -1) inventory.splice(caseIdx, 1);
-
             saveProgress();
             updateProfileUI();
             renderInventory();
-        }
-
-        window.closeWinPopup = function() {
-            document.getElementById('winPopup').classList.remove('show');
-            document.getElementById('rouletteOverlay').classList.remove('active');
+            document.getElementById('itemPreviewOverlay').classList.remove('active');
+            stopItemPreview();
+            pendingPreviewItem = null;
             selectedCase = null;
-            rouletteItems = [];
             rouletteResult = null;
         };
+
+        // Заменяем старую showWinPopup
+        function showWinPopup(skin) {
+            // больше не используется, оставлена для совместимости
+        }
 
         function closeRoulette() {
             if (rouletteActive) return;
