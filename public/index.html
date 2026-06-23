@@ -281,6 +281,7 @@
         let scoreboardOpen = false;
         let roundMoney = 10000;
         let shopOpen = false;
+        let shopMouseHandler = null;
         // Слоты оружия: 1 - основное (ak47/m4a4/awp), 2 - пистолет (usps), 3 - нож (butterfly)
         let weaponSlots = {
             1: 'ak47',
@@ -877,15 +878,42 @@
                 document.exitPointerLock();
                 document.getElementById('shopBalanceDisplay').textContent = '$' + roundMoney;
                 renderShopGrid();
+                if (!shopMouseHandler) {
+                    shopMouseHandler = (e) => {
+                        if (!shopOpen) return;
+                        let target = e.target;
+                        while (target && !target.classList.contains('shop-item')) {
+                            target = target.parentElement;
+                        }
+                        if (target) {
+                            const index = Array.from(target.parentElement.children).indexOf(target);
+                            if (index >= 0 && index < shopItems.length) {
+                                buyItem(shopItems[index]);
+                            }
+                        }
+                    };
+                    document.addEventListener('click', shopMouseHandler);
+                }
             } else {
                 canvas.requestPointerLock();
+                removeShopMouseHandler();
             }
         }
+
         function closeShop() {
             shopOpen = false;
             document.getElementById('shopMenu').classList.remove('visible');
             canvas.requestPointerLock();
+            removeShopMouseHandler();
         }
+
+        function removeShopMouseHandler() {
+            if (shopMouseHandler) {
+                document.removeEventListener('click', shopMouseHandler);
+                shopMouseHandler = null;
+            }
+        }
+
         function buyItem(item) {
             if (roundMoney < item.price) return;
             roundMoney -= item.price;
@@ -909,12 +937,13 @@
             }
             renderShopGrid();
         }
+
         function renderShopGrid() {
             const grid = document.getElementById('shopGrid');
             grid.innerHTML = shopItems.map(item => {
                 const canBuy = roundMoney >= item.price;
                 const disabledClass = canBuy ? '' : 'disabled';
-                return `<div class="shop-item ${disabledClass}" onclick="${canBuy ? `buyItem(shopItems[${shopItems.indexOf(item)}])` : ''}">
+                return `<div class="shop-item ${disabledClass}" data-weapon="${item.weapon}">
                     <div class="shop-item-name">${item.name}</div>
                     <div class="shop-item-price">$${item.price}</div>
                     ${item.desc ? `<div style="font-size:12px;color:#aaa;">${item.desc}</div>` : ''}
