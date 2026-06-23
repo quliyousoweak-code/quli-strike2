@@ -33,18 +33,117 @@
         #inventoryScreen, #casesScreen, #shopScreen, #settingsScreen { background:#0d0d0d; flex-direction:column; align-items:center; gap:16px; padding:40px; overflow-y:auto; }
         #inventoryScreen h2, #casesScreen h2, #shopScreen h2, #settingsScreen h2 { font-size:32px; letter-spacing:4px; color:#fff; margin-bottom:10px; }
         .card-grid { display:flex; flex-wrap:wrap; gap:14px; justify-content:center; max-width:1200px; }
-        .skin-card { width:150px; height:220px; border:2px solid #2a2a2a; border-radius:10px; display:flex; flex-direction:column; align-items:center; justify-content:space-between; padding:12px; transition:all 0.3s; cursor:pointer; position:relative; }
-        .skin-card:hover { border-color:#fff; transform:translateY(-5px); box-shadow:0 10px 30px rgba(0,0,0,0.5); }
-        .skin-card.equipped { border-color:#9c27b0 !important; box-shadow:0 0 20px rgba(156,39,176,0.4) !important; }
-        .skin-card .rarity-strip { position:absolute; top:0; left:0; right:0; height:4px; border-radius:10px 10px 0 0; }
-        .skin-card .skin-name { font-size:11px; font-weight:700; text-align:center; color:#ccc; margin-top:8px; }
-        .skin-card .weapon-name { font-size:10px; color:#888; }
-        .skin-card .rarity-label { font-size:9px; letter-spacing:1px; text-transform:uppercase; font-weight:600; }
-        .skin-card .equip-btn, .skin-card .sell-btn, .skin-card .open-btn { padding:6px 14px; font-size:10px; font-weight:700; letter-spacing:1px; border:none; background:#222; color:#aaa; cursor:pointer; border-radius:20px; transition:all 0.2s; box-shadow:0 2px 6px rgba(0,0,0,0.3); margin:2px; }
-        .skin-card .sell-btn { background:#3a1010; color:#ffaaaa; }
-        .skin-card .open-btn { background:#2a2a2a; color:#ffd700; }
-        .skin-card .equip-btn:hover, .skin-card .open-btn:hover { background:#333; color:#fff; }
-        .skin-card .sell-btn:hover { background:#5a1a1a; color:#ffcccc; }
+        
+        /* Новый стиль инвентаря CS2 */
+        .skin-card { 
+            width: 160px; 
+            height: 200px; 
+            background: #1a1a1a; 
+            border: 2px solid #2a2a2a; 
+            border-radius: 4px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: space-between; 
+            padding: 0; 
+            transition: all 0.2s; 
+            cursor: pointer; 
+            position: relative; 
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+        }
+        .skin-card:hover { 
+            border-color: #fff; 
+            transform: translateY(-3px); 
+            box-shadow: 0 8px 16px rgba(0,0,0,0.7); 
+            z-index: 2;
+        }
+        .skin-card.equipped { 
+            border-color: #9c27b0 !important; 
+            box-shadow: 0 0 12px rgba(156,39,176,0.4); 
+        }
+        .skin-card .item-preview {
+            width: 100%;
+            height: 110px;
+            background: #2a2a2a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .skin-card .item-preview canvas {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        .skin-card .item-info {
+            width: 100%;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            background: #141414;
+        }
+        .skin-card .item-name {
+            font-size: 12px;
+            font-weight: 700;
+            color: #ddd;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .skin-card .weapon-name {
+            font-size: 10px;
+            color: #888;
+            text-align: center;
+        }
+        .skin-card .rarity-label {
+            font-size: 9px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-weight: 600;
+            text-align: center;
+        }
+        .skin-card .item-actions {
+            display: flex;
+            gap: 4px;
+            padding: 6px;
+            background: #0d0d0d;
+            width: 100%;
+            justify-content: center;
+        }
+        .equip-btn, .sell-btn, .open-btn {
+            padding: 4px 10px;
+            font-size: 10px;
+            font-weight: 700;
+            border: none;
+            background: #2a2a2a;
+            color: #aaa;
+            cursor: pointer;
+            border-radius: 2px;
+            transition: all 0.2s;
+            text-transform: uppercase;
+        }
+        .sell-btn { background: #3a1010; color: #ffaaaa; }
+        .open-btn { background: #2a2a2a; color: #ffd700; }
+        .equip-btn:hover, .open-btn:hover { background: #3a3a3a; color: #fff; }
+        .sell-btn:hover { background: #5a1a1a; color: #ffcccc; }
+        .equipped-badge {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #9c27b0;
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 2px;
+            font-weight: bold;
+            z-index: 3;
+        }
+
+        /* Остальные стили без изменений */
         .case-card { width:200px; height:300px; background:linear-gradient(145deg, #1e1e1e, #111); border:2px solid #333; border-radius:14px; display:flex; flex-direction:column; align-items:center; justify-content:space-between; gap:8px; cursor:pointer; transition:all 0.3s; box-shadow:0 6px 18px rgba(0,0,0,0.4); padding:16px; }
         .case-card:hover { border-color:#ffd700; box-shadow:0 0 30px rgba(255,215,0,0.3); transform:translateY(-5px); }
         .case-card .case-view { width:160px; height:160px; border-radius:8px; overflow:hidden; }
@@ -458,6 +557,38 @@
             return new THREE.CanvasTexture(c);
         }
 
+        // Генерация иконки для инвентаря
+        function createItemPreview(item) {
+            const c = document.createElement('canvas');
+            c.width = 160; c.height = 110;
+            const ctx = c.getContext('2d');
+            ctx.fillStyle = '#1a1a1a';
+            ctx.fillRect(0,0,160,110);
+            if (item.type === 'case') {
+                ctx.fillStyle = '#ffd700';
+                ctx.font = 'bold 20px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('📦', 80, 55);
+            } else if (item.type === 'gloves') {
+                ctx.fillStyle = item.color || '#888';
+                ctx.fillRect(20,20,120,70);
+                ctx.fillStyle = '#000';
+                ctx.font = 'bold 14px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('🧤', 80, 55);
+            } else {
+                const wtype = item.weaponType;
+                const col = weaponDefaults[wtype]?.color || 0x888888;
+                ctx.fillStyle = '#' + col.toString(16).padStart(6, '0');
+                ctx.fillRect(20,20,120,70);
+                ctx.fillStyle = '#000';
+                ctx.font = 'bold 12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(weaponDefaults[wtype]?.name || wtype, 80, 60);
+            }
+            return c.toDataURL();
+        }
+
         function updateWeaponModel() {
             if (weaponModel) weaponGroup.remove(weaponModel);
             if (leftHand) weaponGroup.remove(leftHand);
@@ -799,7 +930,6 @@
             return 0.5;
         }
 
-        // 3D-модели кейсов (оставлены без изменений)
         function createCaseModel(caseData, container) {
             const w = container.clientWidth || 160;
             const h = container.clientHeight || 160;
@@ -977,7 +1107,6 @@
             if (!newItem.type) newItem.type = skin.weaponType ? 'weapon' : 'gloves';
             inventory.push(newItem);
 
-            // Удаляем открытый кейс из инвентаря
             const caseIdx = inventory.findIndex(item => item.type === 'case' && item.caseIndex === cases.indexOf(selectedCase));
             if (caseIdx !== -1) inventory.splice(caseIdx, 1);
 
@@ -1002,7 +1131,6 @@
         }
         window.closeRoulette = closeRoulette;
 
-        // Инвентарь
         function renderInventory() {
             const grid = document.getElementById('inventoryGrid');
             if (inventory.length === 0) {
@@ -1010,14 +1138,17 @@
                 return;
             }
             grid.innerHTML = inventory.map((item, idx) => {
+                const previewImg = createItemPreview(item);
                 if (item.type === 'case') {
                     const caseData = cases[item.caseIndex];
-                    return `<div class="skin-card" style="border-color:#ffd700; background: linear-gradient(135deg, #332200, #1a1a1a);">
-                        <div class="rarity-strip" style="background:#ffd700;"></div>
-                        <div class="skin-name">${caseData.name}</div>
-                        <div class="weapon-name">Кейс</div>
-                        <div class="rarity-label" style="color:#ffd700;">Предмет</div>
-                        <div style="display:flex; gap:4px;">
+                    return `<div class="skin-card" style="border-color:#ffd700;">
+                        <div class="item-preview"><img src="${previewImg}" style="width:100%;height:100%;object-fit:contain;"/></div>
+                        <div class="item-info">
+                            <div class="item-name">${caseData.name}</div>
+                            <div class="weapon-name">Кейс</div>
+                            <div class="rarity-label" style="color:#ffd700;">Предмет</div>
+                        </div>
+                        <div class="item-actions">
                             <button class="open-btn" onclick="openCaseFromInventory(${idx})">Открыть</button>
                         </div>
                     </div>`;
@@ -1027,15 +1158,17 @@
                     const isEq = isGlove ? (equippedGloves?.id === item.id) : (equippedSkins[item.weaponType]?.id === item.id);
                     const basePrice = {'Consumer':10,'Industrial':20,'Mil-Spec':50,'Restricted':150,'Classified':500,'Covert':1500,'Gold':5000}[item.rarity] || 5;
                     const price = Math.floor(basePrice * (item.priceMultiplier || 1));
-                    const bgColor = rc + '22';
                     const weaponName = isGlove ? 'Перчатки' : (weaponDefaults[item.weaponType]?.name || '');
-                    return `<div class="skin-card${isEq?' equipped':''}" style="border-color:${rc}; background: linear-gradient(135deg, ${bgColor}, #1a1a1a);">
-                        <div class="rarity-strip" style="background:${rc};"></div>
-                        <div class="skin-name">${item.name}</div>
-                        <div class="weapon-name">${weaponName}</div>
-                        <div class="rarity-label" style="color:${rc};">${item.rarity}</div>
-                        <div style="display:flex; gap:4px;">
-                            <button class="equip-btn" onclick="equipItem(${idx})">${isEq?'✔ Экип':'Экипировать'}</button>
+                    return `<div class="skin-card${isEq?' equipped':''}" style="border-color:${rc};">
+                        ${isEq ? '<div class="equipped-badge">✔</div>' : ''}
+                        <div class="item-preview"><img src="${previewImg}" style="width:100%;height:100%;object-fit:contain;"/></div>
+                        <div class="item-info">
+                            <div class="item-name">${item.name}</div>
+                            <div class="weapon-name">${weaponName}</div>
+                            <div class="rarity-label" style="color:${rc};">${item.rarity}</div>
+                        </div>
+                        <div class="item-actions">
+                            <button class="equip-btn" onclick="equipItem(${idx})">${isEq?'✔':'Экип'}</button>
                             <button class="sell-btn" onclick="sellItem(${idx})">💰${price}</button>
                         </div>
                     </div>`;
