@@ -114,6 +114,25 @@
         .weapon-slot-item .name { font-size: 12px; }
         .crosshair-settings { background:#1a1a1a; border-radius:12px; padding:20px; margin-top:20px; width:100%; max-width:500px; }
         .crosshair-settings h4 { color:#fff; margin-bottom:15px; text-align:center; }
+        /* Улучшенная золотая кнопка */
+        .btn.gold {
+            background: linear-gradient(135deg, #ffd700, #b8860b);
+            color: #000;
+            border: 2px solid #ffec8b;
+            box-shadow: 0 0 20px rgba(255,215,0,0.5), 0 4px 12px rgba(0,0,0,0.4);
+            font-weight: 800;
+            font-size: 18px;
+            padding: 16px 40px;
+            letter-spacing: 2px;
+            min-width: auto;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .btn.gold:hover {
+            background: linear-gradient(135deg, #ffe44d, #c99718);
+            box-shadow: 0 0 45px rgba(255,215,0,0.9), 0 8px 24px rgba(0,0,0,0.5);
+            transform: translateY(-3px);
+        }
     </style>
 </head>
 <body>
@@ -172,7 +191,7 @@
             <button class="back-btn" onclick="showScreen('menuScreen')">← Назад</button>
             <h2>🛒 МАРКЕТ</h2>
             <p style="color:#aaa;">Баланс: <span style="color:#ffd700;font-weight:700;" id="shopBalance">500</span> монет</p>
-            <button class="btn gold" onclick="addCoins()">+ Добавить 100 монет</button>
+            <button class="btn gold" onclick="addCoins()" style="font-size:22px; padding:18px 50px;">💰 + Добавить 100 монет</button>
         </div>
         <div id="settingsScreen" class="screen">
             <button class="back-btn" onclick="showScreen('menuScreen')">← Назад</button>
