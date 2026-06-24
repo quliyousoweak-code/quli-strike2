@@ -294,7 +294,6 @@
 
     <script type="module">
         import * as THREE from 'three';
-
         // ---------- Глобальные переменные ----------
         let mouseSensitivity = 0.5;
         let playerNickname = 'PlayerOne';
@@ -320,7 +319,6 @@
         let weaponSlots = { 1: 'ak47', 2: 'usps', 3: 'butterfly' };
         let activeSlot = 1;
         let currentMuzzleLocal = new THREE.Vector3(0, 0, 0);
-
         // Аудио
         let audioCtx = null;
         function initAudio() {
@@ -354,7 +352,6 @@
             noise.start(now);
             noise.stop(now + 0.15);
         }
-
         const weaponDefaults = {
             ak47: { name: 'AK-47', damage: 28, fireRate: 0.1, magSize: 30, reserveAmmo: 90, recoil: 0.04, color: 0x8b4513, slot: 1 },
             m4a4: { name: 'M4A4', damage: 25, fireRate: 0.09, magSize: 30, reserveAmmo: 90, recoil: 0.03, color: 0x556b2f, slot: 1 },
@@ -364,7 +361,6 @@
             karambit: { name: 'Karambit', damage: 100, fireRate: 0.3, magSize: 1, reserveAmmo: 0, recoil: 0, color: 0xcccccc, slot: 3 },
             butterfly: { name: 'Butterfly', damage: 100, fireRate: 0.3, magSize: 1, reserveAmmo: 0, recoil: 0, color: 0xdddddd, slot: 3 }
         };
-
         const shopItems = [
             { name: 'AK-47', weapon: 'ak47', price: 2700, slot: 1 },
             { name: 'M4A4', weapon: 'm4a4', price: 3100, slot: 1 },
@@ -372,7 +368,6 @@
             { name: 'USP-S', weapon: 'usps', price: 200, slot: 2 },
             { name: 'Броня', weapon: 'armor', price: 650, desc: 'Восстанавливает 100 ед. брони', slot: null },
         ];
-
         const canvas = document.getElementById('gameCanvas');
         const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -381,13 +376,11 @@
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
         renderer.toneMappingExposure = 1.2;
-
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x000000);
         scene.fog = new THREE.Fog(0xc8b89a, 40, 120);
         const camera = new THREE.PerspectiveCamera(80, window.innerWidth/window.innerHeight, 0.1, 200);
         camera.position.set(0, 1.7, 0);
-
         const ambientLight = new THREE.AmbientLight(0xffeedd, 1.0);
         scene.add(ambientLight);
         const sunLight = new THREE.DirectionalLight(0xfff5e8, 3.5);
@@ -400,7 +393,6 @@
         sunLight.shadow.bias = -0.0005;
         scene.add(sunLight);
         scene.add(new THREE.HemisphereLight(0xffeedd, 0x8d6e4b, 0.8));
-
         // ---------- КАРТА ----------
         const mapObjects = [];
         const collisionBoxes = [];
@@ -490,7 +482,6 @@
             createColumn(0, 20, 0.6, 5); createColumn(0, -20, 0.6, 5);
         }
         buildAncientMap();
-
         // ---------- ОРУЖИЕ НА ЭКРАНЕ ----------
         const weaponGroup = new THREE.Group();
         camera.add(weaponGroup);
@@ -498,7 +489,6 @@
         scene.add(camera);
         let weaponModel = null;
         let leftHand = null, rightHand = null;
-
         function createGloveTexture(skin = null) {
             const c = document.createElement('canvas');
             c.width = 512; c.height = 512;
@@ -556,7 +546,6 @@
             ctx.fillStyle = '#ffffff'; ctx.font = 'bold 20px Arial'; ctx.textAlign = 'center'; ctx.fillText('OPERATOR', 256, 460);
             return new THREE.CanvasTexture(c);
         }
-
         function createGloveHand(side, skin = null) {
             const group = new THREE.Group();
             const gloveTex = createGloveTexture(skin);
@@ -570,13 +559,11 @@
             const cuff = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.06, 0.13), darkMat); cuff.position.set(0, -0.17, 0); group.add(cuff);
             return group;
         }
-
         function getSkinMaterial(weaponType) {
             const skin = equippedSkins[weaponType];
             if (skin) { const tex = createSkinTexture(skin); return new THREE.MeshStandardMaterial({ map: tex, roughness: 0.4, metalness: 0.6 }); }
             return new THREE.MeshStandardMaterial({ color: weaponDefaults[weaponType].color, roughness: 0.5, metalness: 0.7 });
         }
-
         function createSkinTexture(skin) {
             const c = document.createElement('canvas');
             c.width = 256; c.height = 256;
@@ -594,7 +581,6 @@
             ctx.fillStyle='#ffffff'; ctx.font='bold 16px Arial'; ctx.textAlign='center'; ctx.fillText(skin.name,128,240);
             return new THREE.CanvasTexture(c);
         }
-
         function createItemPreview(item) {
             const c = document.createElement('canvas');
             c.width = 200; c.height = 140;
@@ -605,7 +591,6 @@
             else { const wtype = item.weaponType; const col = weaponDefaults[wtype]?.color || 0x888888; ctx.fillStyle = '#' + col.toString(16).padStart(6, '0'); ctx.fillRect(20,20,160,100); ctx.fillStyle = '#000'; ctx.font = 'bold 14px Arial'; ctx.textAlign = 'center'; ctx.fillText(weaponDefaults[wtype]?.name || wtype, 100, 75); }
             return c.toDataURL();
         }
-
         function createWeaponTexture(weaponType, skinColor = null) {
             const c = document.createElement('canvas');
             c.width = 512; c.height = 512;
@@ -647,7 +632,6 @@
             }
             return new THREE.CanvasTexture(c);
         }
-
         function updateWeaponModel() {
             if (weaponModel) weaponGroup.remove(weaponModel);
             if (leftHand) weaponGroup.remove(leftHand);
@@ -730,7 +714,6 @@
             rightHand.position.copy(rightHandPos); rightHand.rotation.set(0, 0, -0.2);
         }
         updateWeaponModel();
-
         // ---------- НОВЫЕ БОТЫ CS2 STYLE ----------
         const bots = [];
         
